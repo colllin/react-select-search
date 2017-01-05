@@ -246,9 +246,9 @@ var Component = function (_React$Component) {
             }
 
             /** Tab */
-            if (e.keyCode === 9) {
-                return this.onBlur();
-            }
+            // if (e.keyCode === 9) {
+            //     return this.onBlur();
+            // }
 
             /** Arrow Down */
             if (e.keyCode === 40) {
@@ -496,6 +496,7 @@ var Component = function (_React$Component) {
             this.setState({ value: currentValue, search: search, options: options, highlighted: highlighted, focus: this.props.multiple });
 
             setTimeout(function () {
+                // Override the context with `null` instead of leaking `this.props` as the context.
                 _this3.props.onChange.call(null, _this3.publishOption(currentValue), _this3.state, _this3.props);
             }, 50);
 
@@ -524,6 +525,7 @@ var Component = function (_React$Component) {
             this.setState({ value: value, search: '' });
 
             setTimeout(function () {
+                // Override the context with `null` instead of leaking `this.props` as the context.
                 _this4.props.onChange.call(null, _this4.publishOption(value), _this4.state, _this4.props);
             }, 50);
         }

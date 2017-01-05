@@ -204,9 +204,9 @@ class Component extends React.Component {
         }
 
         /** Tab */
-        if (e.keyCode === 9) {
-            return this.onBlur();
-        }
+        // if (e.keyCode === 9) {
+        //     return this.onBlur();
+        // }
 
         /** Arrow Down */
         if (e.keyCode === 40) {
@@ -431,6 +431,7 @@ class Component extends React.Component {
         this.setState({value: currentValue, search: search, options: options, highlighted: highlighted, focus: this.props.multiple});
 
         setTimeout(() => {
+            // Override the context with `null` instead of leaking `this.props` as the context.
             this.props.onChange.call(null, this.publishOption(currentValue), this.state, this.props);
         }, 50);
 
@@ -456,6 +457,7 @@ class Component extends React.Component {
         this.setState({value: value, search: ''});
 
         setTimeout(() => {
+            // Override the context with `null` instead of leaking `this.props` as the context.
             this.props.onChange.call(null, this.publishOption(value), this.state, this.props);
         }, 50);
     }
