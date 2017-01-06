@@ -159,7 +159,7 @@ class Component extends React.Component {
     /**
      * DOM event handlers
      * -------------------------------------------------------------------------*/
-    onFieldBlur = () => {
+    fieldDidBlur = () => {
         // if (this.props.search && !this.props.multiple) {
         //     this.refs.search.blur();
         // }
@@ -174,7 +174,7 @@ class Component extends React.Component {
         this.setState({focus: false, open: false, highlighted: null, search: search});
     }
 
-    onFieldFocus = () => this.setState({focus: true, open: true, options: this.state.defaultOptions, search: ''});
+    fieldDidFocus = () => this.setState({focus: true, open: true, options: this.state.defaultOptions, search: ''});
 
     onChange = (e) => {
         let value = e.target.value;
@@ -213,7 +213,7 @@ class Component extends React.Component {
 
         /** Tab */
         // if (e.keyCode === 9) {
-        //     return this.onFieldBlur();
+        //     return this.fieldDidBlur();
         // }
 
         /** Arrow Down */
@@ -371,12 +371,13 @@ class Component extends React.Component {
         })[0];
     }
 
-    toggle = () => {
-        if (this.state.open) {
-            this.setState({open: false});
-        } else if (!this.state.focus) {
-            this.onFieldFocus();
-        }
+    toggle = (event) => {
+        event && event.preventDefault();
+        // if (this.state.open) {
+        //     this.setState({open: false});
+        // } else if (!this.state.focus) {
+        //     this.fieldDidFocus();
+        // }
     }
 
     placeSelectedFirst(options, value) {
@@ -598,7 +599,7 @@ class Component extends React.Component {
                     left: '-9999px'
                 };
 
-                outElement = <input type="text" onFocus={this.onFieldFocus} onBlur={this.onFieldBlur} style={outStyle} value={this.state.value} readOnly={true} ref="outInput" name={this.props.name} />;
+                outElement = <input type="text" /*onFocus={this.fieldDidFocus} onBlur={this.fieldDidBlur}*/ style={outStyle} value={this.state.value} readOnly={true} ref="outInput" name={this.props.name} />;
             }
         }
 
@@ -611,7 +612,7 @@ class Component extends React.Component {
         if (this.props.search) {
             let name = null;
 
-            searchField = <input name={name} ref="search" onFocus={this.onFieldFocus} onBlur={this.onFieldBlur} onKeyPress={this.onKeyPress} className={this.classes.search} type="search" value={this.state.search} onChange={this.onChange} placeholder={this.props.placeholder} />;
+            searchField = <input name={name} ref="search" onFocus={this.fieldDidFocus} onBlur={this.fieldDidBlur} onKeyPress={this.onKeyPress} className={this.classes.search} type="search" value={this.state.search} onChange={this.onChange} placeholder={this.props.placeholder} />;
         } else {
             let option;
             let labelValue;
@@ -626,7 +627,7 @@ class Component extends React.Component {
                 labelClassName = this.classes.search;
             }
 
-            searchField = <label onClick={this.toggle} onBlur={this.onFieldBlur} className={labelClassName}>{labelValue}</label>;
+            searchField = <a onFocus={this.fieldDidFocus} onClick={this.toggle} onBlur={this.fieldDidBlur} className={labelClassName}>{labelValue}</a>;
         }
 
         return searchField;

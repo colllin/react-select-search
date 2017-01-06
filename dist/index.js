@@ -622,7 +622,7 @@ var Component = function (_React$Component) {
                         left: '-9999px'
                     };
 
-                    outElement = _react2.default.createElement('input', { type: 'text', onFocus: this.onFieldFocus, onBlur: this.onFieldBlur, style: outStyle, value: this.state.value, readOnly: true, ref: 'outInput', name: this.props.name });
+                    outElement = _react2.default.createElement('input', { type: 'text' /*onFocus={this.fieldDidFocus} onBlur={this.fieldDidBlur}*/, style: outStyle, value: this.state.value, readOnly: true, ref: 'outInput', name: this.props.name });
                 }
             }
 
@@ -636,7 +636,7 @@ var Component = function (_React$Component) {
             if (this.props.search) {
                 var name = null;
 
-                searchField = _react2.default.createElement('input', { name: name, ref: 'search', onFocus: this.onFieldFocus, onBlur: this.onFieldBlur, onKeyPress: this.onKeyPress, className: this.classes.search, type: 'search', value: this.state.search, onChange: this.onChange, placeholder: this.props.placeholder });
+                searchField = _react2.default.createElement('input', { name: name, ref: 'search', onFocus: this.fieldDidFocus, onBlur: this.fieldDidBlur, onKeyPress: this.onKeyPress, className: this.classes.search, type: 'search', value: this.state.search, onChange: this.onChange, placeholder: this.props.placeholder });
             } else {
                 var option = void 0;
                 var labelValue = void 0;
@@ -652,8 +652,8 @@ var Component = function (_React$Component) {
                 }
 
                 searchField = _react2.default.createElement(
-                    'label',
-                    { onClick: this.toggle, onBlur: this.onFieldBlur, className: labelClassName },
+                    'a',
+                    { onFocus: this.fieldDidFocus, onClick: this.toggle, onBlur: this.fieldDidBlur, className: labelClassName },
                     labelValue
                 );
             }
@@ -681,7 +681,7 @@ var Component = function (_React$Component) {
 var _initialiseProps = function _initialiseProps() {
     var _this7 = this;
 
-    this.onFieldBlur = function () {
+    this.fieldDidBlur = function () {
         // if (this.props.search && !this.props.multiple) {
         //     this.refs.search.blur();
         // }
@@ -696,7 +696,7 @@ var _initialiseProps = function _initialiseProps() {
         _this7.setState({ focus: false, open: false, highlighted: null, search: search });
     };
 
-    this.onFieldFocus = function () {
+    this.fieldDidFocus = function () {
         return _this7.setState({ focus: true, open: true, options: _this7.state.defaultOptions, search: '' });
     };
 
@@ -737,7 +737,7 @@ var _initialiseProps = function _initialiseProps() {
 
         /** Tab */
         // if (e.keyCode === 9) {
-        //     return this.onFieldBlur();
+        //     return this.fieldDidBlur();
         // }
 
         /** Arrow Down */
@@ -758,12 +758,13 @@ var _initialiseProps = function _initialiseProps() {
         }
     };
 
-    this.toggle = function () {
-        if (_this7.state.open) {
-            _this7.setState({ open: false });
-        } else if (!_this7.state.focus) {
-            _this7.onFieldFocus();
-        }
+    this.toggle = function (event) {
+        event && event.preventDefault();
+        // if (this.state.open) {
+        //     this.setState({open: false});
+        // } else if (!this.state.focus) {
+        //     this.fieldDidFocus();
+        // }
     };
 };
 
