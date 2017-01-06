@@ -500,17 +500,13 @@ var Component = function (_React$Component) {
                         if (_this3.state.value.indexOf(element.value) < 0) {
                             options.push(_react2.default.createElement(
                                 'li',
-                                { className: className, onClick: function onClick() {
-                                        return _this3.chooseOption(element.value);
-                                    }, key: element.value + '-option', 'data-value': element.value },
+                                { className: className, onClick: _this3.chooseOption.bind(_this3, element.value), key: element.value + '-option', 'data-value': element.value },
                                 _this3.props.renderOption(element, _this3.state, _this3.props)
                             ));
                         } else {
                             options.push(_react2.default.createElement(
                                 'li',
-                                { className: className, onClick: function onClick() {
-                                        return _this3.removeOption(element.value);
-                                    }, key: element.value + '-option', 'data-value': element.value },
+                                { className: className, onClick: _this3.removeOption.bind(_this3, element.value), key: element.value + '-option', 'data-value': element.value },
                                 _this3.props.renderOption(element, _this3.state, _this3.props)
                             ));
                         }
@@ -524,9 +520,7 @@ var Component = function (_React$Component) {
                         } else {
                             options.push(_react2.default.createElement(
                                 'li',
-                                { className: className, onClick: function onClick() {
-                                        return _this3.chooseOption(element.value);
-                                    }, key: element.value + '-option', 'data-value': element.value },
+                                { className: className, onClick: _this3.chooseOption.bind(_this3, element.value), key: element.value + '-option', 'data-value': element.value },
                                 _this3.props.renderOption(element, _this3.state, _this3.props)
                             ));
                         }
