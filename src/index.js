@@ -150,7 +150,13 @@ class Component extends React.Component {
         }
 
         if (this.state.highlighted !== prevState.highlighted) {
+            // Override the context with `null` instead of leaking `this.props` as the context.
             this.props.onHighlight.call(null, this.state.options[this.state.highlighted], this.state, this.props);
+        }
+
+        if (this.state.value !== prevState.value) {
+            // Override the context with `null` instead of leaking `this.props` as the context.
+            this.props.onChange.call(null, this.publishOption(this.state.value), this.state, this.props);
         }
 
         this.scrollToSelected();
@@ -176,7 +182,7 @@ class Component extends React.Component {
 
     fieldDidFocus = () => this.setState({focus: true, open: true, options: this.state.defaultOptions, search: ''});
 
-    onChange = (e) => {
+    searchDidChange = (e) => {
         let value = e.target.value;
 
         if (!value) {
@@ -444,11 +450,6 @@ class Component extends React.Component {
 
         this.setState({value: currentValue, search: search, options: options, highlighted: highlighted, /*focus: this.props.multiple,*/ open: false});
 
-        setTimeout(() => {
-            // Override the context with `null` instead of leaking `this.props` as the context.
-            this.props.onChange.call(null, this.publishOption(currentValue), this.state, this.props);
-        }, 50);
-
         if (this.props.search && !this.props.multiple) {
             this.refs.search.blur();
         }
@@ -469,11 +470,6 @@ class Component extends React.Component {
         value.splice(value.indexOf(option.value), 1);
 
         this.setState({value: value, search: ''});
-
-        setTimeout(() => {
-            // Override the context with `null` instead of leaking `this.props` as the context.
-            this.props.onChange.call(null, this.publishOption(value), this.state, this.props);
-        }, 50);
     }
 
     getNewOptionsList(options, value) {
@@ -612,7 +608,7 @@ class Component extends React.Component {
         if (this.props.search) {
             let name = null;
 
-            searchField = <input name={name} ref="search" onFocus={this.fieldDidFocus} onBlur={this.fieldDidBlur} onKeyPress={this.onKeyPress} className={this.classes.search} type="search" value={this.state.search} onChange={this.onChange} placeholder={this.props.placeholder} />;
+            searchField = <input name={name} ref="search" onFocus={this.fieldDidFocus} onBlur={this.fieldDidBlur} onKeyPress={this.onKeyPress} className={this.classes.search} type="search" value={this.state.search} onChange={this.searchDidChange} placeholder={this.props.placeholder} />;
         } else {
             let option;
             let labelValue;

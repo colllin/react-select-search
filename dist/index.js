@@ -189,7 +189,13 @@ var Component = function (_React$Component) {
             }
 
             if (this.state.highlighted !== prevState.highlighted) {
+                // Override the context with `null` instead of leaking `this.props` as the context.
                 this.props.onHighlight.call(null, this.state.options[this.state.highlighted], this.state, this.props);
+            }
+
+            if (this.state.value !== prevState.value) {
+                // Override the context with `null` instead of leaking `this.props` as the context.
+                this.props.onChange.call(null, this.publishOption(this.state.value), this.state, this.props);
             }
 
             this.scrollToSelected();
@@ -385,8 +391,6 @@ var Component = function (_React$Component) {
     }, {
         key: 'chooseOption',
         value: function chooseOption(value) {
-            var _this3 = this;
-
             var currentValue = this.state.value;
             var option = void 0;
             var search = void 0;
@@ -423,11 +427,6 @@ var Component = function (_React$Component) {
 
             this.setState({ value: currentValue, search: search, options: options, highlighted: highlighted, /*focus: this.props.multiple,*/open: false });
 
-            setTimeout(function () {
-                // Override the context with `null` instead of leaking `this.props` as the context.
-                _this3.props.onChange.call(null, _this3.publishOption(currentValue), _this3.state, _this3.props);
-            }, 50);
-
             if (this.props.search && !this.props.multiple) {
                 this.refs.search.blur();
             }
@@ -435,8 +434,6 @@ var Component = function (_React$Component) {
     }, {
         key: 'removeOption',
         value: function removeOption(value) {
-            var _this4 = this;
-
             if (!value) {
                 return false;
             }
@@ -451,11 +448,6 @@ var Component = function (_React$Component) {
             value.splice(value.indexOf(option.value), 1);
 
             this.setState({ value: value, search: '' });
-
-            setTimeout(function () {
-                // Override the context with `null` instead of leaking `this.props` as the context.
-                _this4.props.onChange.call(null, _this4.publishOption(value), _this4.state, _this4.props);
-            }, 50);
         }
     }, {
         key: 'getNewOptionsList',
@@ -491,7 +483,7 @@ var Component = function (_React$Component) {
     }, {
         key: 'renderOptions',
         value: function renderOptions() {
-            var _this5 = this;
+            var _this3 = this;
 
             var select = null;
             var options = [];
@@ -500,48 +492,48 @@ var Component = function (_React$Component) {
 
             if (foundOptions && foundOptions.length > 0) {
                 foundOptions.forEach(function (element, i) {
-                    var className = _this5.classes.option;
+                    var className = _this3.classes.option;
 
-                    if (_this5.state.highlighted === i) {
-                        className += ' ' + _Bem2.default.m(_this5.classes.option, 'hover');
+                    if (_this3.state.highlighted === i) {
+                        className += ' ' + _Bem2.default.m(_this3.classes.option, 'hover');
                     }
 
-                    if (_this5.props.multiple && _this5.state.value.indexOf(element.value) >= 0 || element.value === _this5.state.value) {
-                        className += ' ' + _Bem2.default.m(_this5.classes.option, 'selected');
+                    if (_this3.props.multiple && _this3.state.value.indexOf(element.value) >= 0 || element.value === _this3.state.value) {
+                        className += ' ' + _Bem2.default.m(_this3.classes.option, 'selected');
                     }
 
-                    if (_this5.props.multiple) {
-                        if (_this5.state.value.indexOf(element.value) < 0) {
+                    if (_this3.props.multiple) {
+                        if (_this3.state.value.indexOf(element.value) < 0) {
                             options.push(_react2.default.createElement(
                                 'li',
                                 { className: className, onClick: function onClick() {
-                                        return _this5.chooseOption(element.value);
+                                        return _this3.chooseOption(element.value);
                                     }, key: element.value + '-option', 'data-value': element.value },
-                                _this5.props.renderOption(element, _this5.state, _this5.props)
+                                _this3.props.renderOption(element, _this3.state, _this3.props)
                             ));
                         } else {
                             options.push(_react2.default.createElement(
                                 'li',
                                 { className: className, onClick: function onClick() {
-                                        return _this5.removeOption(element.value);
+                                        return _this3.removeOption(element.value);
                                     }, key: element.value + '-option', 'data-value': element.value },
-                                _this5.props.renderOption(element, _this5.state, _this5.props)
+                                _this3.props.renderOption(element, _this3.state, _this3.props)
                             ));
                         }
                     } else {
-                        if (element.value === _this5.state.value) {
+                        if (element.value === _this3.state.value) {
                             options.push(_react2.default.createElement(
                                 'li',
                                 { className: className, key: element.value + '-option', 'data-value': element.value },
-                                _this5.props.renderOption(element)
+                                _this3.props.renderOption(element)
                             ));
                         } else {
                             options.push(_react2.default.createElement(
                                 'li',
                                 { className: className, onClick: function onClick() {
-                                        return _this5.chooseOption(element.value);
+                                        return _this3.chooseOption(element.value);
                                     }, key: element.value + '-option', 'data-value': element.value },
-                                _this5.props.renderOption(element, _this5.state, _this5.props)
+                                _this3.props.renderOption(element, _this3.state, _this3.props)
                             ));
                         }
                     }
@@ -575,7 +567,7 @@ var Component = function (_React$Component) {
     }, {
         key: 'renderOutElement',
         value: function renderOutElement() {
-            var _this6 = this;
+            var _this4 = this;
 
             var option = null;
             var outElement = void 0;
@@ -585,8 +577,8 @@ var Component = function (_React$Component) {
                     (function () {
                         var finalValueOptions = [];
 
-                        _this6.state.value.forEach(function (value, i) {
-                            option = _this6.findByValue(_this6.state.defaultOptions, value);
+                        _this4.state.value.forEach(function (value, i) {
+                            option = _this4.findByValue(_this4.state.defaultOptions, value);
                             finalValueOptions.push(_react2.default.createElement(
                                 'option',
                                 { key: i, value: option.value },
@@ -596,7 +588,7 @@ var Component = function (_React$Component) {
 
                         outElement = _react2.default.createElement(
                             'select',
-                            { value: _this6.state.value, className: _this6.classes.out, name: _this6.props.name, readOnly: true, multiple: true },
+                            { value: _this4.state.value, className: _this4.classes.out, name: _this4.props.name, readOnly: true, multiple: true },
                             finalValueOptions
                         );
                     })();
@@ -636,7 +628,7 @@ var Component = function (_React$Component) {
             if (this.props.search) {
                 var name = null;
 
-                searchField = _react2.default.createElement('input', { name: name, ref: 'search', onFocus: this.fieldDidFocus, onBlur: this.fieldDidBlur, onKeyPress: this.onKeyPress, className: this.classes.search, type: 'search', value: this.state.search, onChange: this.onChange, placeholder: this.props.placeholder });
+                searchField = _react2.default.createElement('input', { name: name, ref: 'search', onFocus: this.fieldDidFocus, onBlur: this.fieldDidBlur, onKeyPress: this.onKeyPress, className: this.classes.search, type: 'search', value: this.state.search, onChange: this.searchDidChange, placeholder: this.props.placeholder });
             } else {
                 var option = void 0;
                 var labelValue = void 0;
@@ -679,7 +671,7 @@ var Component = function (_React$Component) {
 }(_react2.default.Component);
 
 var _initialiseProps = function _initialiseProps() {
-    var _this7 = this;
+    var _this5 = this;
 
     this.fieldDidBlur = function () {
         // if (this.props.search && !this.props.multiple) {
@@ -688,51 +680,51 @@ var _initialiseProps = function _initialiseProps() {
 
         var search = '';
 
-        if (_this7.state.value && _this7.props.search && !_this7.props.multiple) {
-            var option = _this7.findByValue(null, _this7.state.value);
+        if (_this5.state.value && _this5.props.search && !_this5.props.multiple) {
+            var option = _this5.findByValue(null, _this5.state.value);
             search = option.name;
         }
 
-        _this7.setState({ focus: false, open: false, highlighted: null, search: search });
+        _this5.setState({ focus: false, open: false, highlighted: null, search: search });
     };
 
     this.fieldDidFocus = function () {
-        return _this7.setState({ focus: true, open: true, options: _this7.state.defaultOptions, search: '' });
+        return _this5.setState({ focus: true, open: true, options: _this5.state.defaultOptions, search: '' });
     };
 
-    this.onChange = function (e) {
+    this.searchDidChange = function (e) {
         var value = e.target.value;
 
         if (!value) {
             value = '';
         }
 
-        var options = _this7.state.defaultOptions;
-        options = _this7.getNewOptionsList(options, value);
+        var options = _this5.state.defaultOptions;
+        options = _this5.getNewOptionsList(options, value);
 
-        _this7.placeSelectedFirst(options);
+        _this5.placeSelectedFirst(options);
 
-        _this7.setState({ search: value, options: options });
+        _this5.setState({ search: value, options: options });
     };
 
     this.onKeyPress = function (e) {
-        if (!_this7.state.options || _this7.state.options.length < 1) {
+        if (!_this5.state.options || _this5.state.options.length < 1) {
             return;
         }
 
         /** Enter */
         if (e.keyCode === 13) {
-            return _this7.handleEnter();
+            return _this5.handleEnter();
         }
     };
 
     this.onKeyDown = function (e) {
-        if (!_this7.state.focus) {
+        if (!_this5.state.focus) {
             return;
         }
 
-        if (!_this7.state.open) {
-            _this7.setState({ open: true });
+        if (!_this5.state.open) {
+            _this5.setState({ open: true });
         }
 
         /** Tab */
@@ -742,19 +734,19 @@ var _initialiseProps = function _initialiseProps() {
 
         /** Arrow Down */
         if (e.keyCode === 40) {
-            _this7.handleArrowDown();
+            _this5.handleArrowDown();
         }
 
         /** Arrow Up */
         if (e.keyCode === 38) {
-            _this7.handleArrowUp();
+            _this5.handleArrowUp();
         }
     };
 
     this.onKeyUp = function (e) {
         /** Esc */
         if (e.keyCode === 27) {
-            _this7.handleEsc();
+            _this5.handleEsc();
         }
     };
 
