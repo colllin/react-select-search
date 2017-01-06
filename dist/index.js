@@ -760,9 +760,9 @@ var _initialiseProps = function _initialiseProps() {
 
     this.toggle = function () {
         if (_this7.state.open) {
-            _this7.handleClose();
-        } else {
-            _this7.handleOpen();
+            _this7.setState({ open: false });
+        } else if (!_this7.state.focus) {
+            _this7.onFieldFocus();
         }
     };
 };
