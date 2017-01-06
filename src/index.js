@@ -626,7 +626,7 @@ class Component extends React.Component {
                 labelClassName = this.classes.search;
             }
 
-            searchField = <strong onClick={this.toggle} className={labelClassName}>{labelValue}</strong>;
+            searchField = <label onClick={this.toggle} onBlur={this.onFieldBlur} className={labelClassName}>{labelValue}</label>;
         }
 
         return searchField;

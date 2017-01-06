@@ -652,8 +652,8 @@ var Component = function (_React$Component) {
                 }
 
                 searchField = _react2.default.createElement(
-                    'strong',
-                    { onClick: this.toggle, className: labelClassName },
+                    'label',
+                    { onClick: this.toggle, onBlur: this.onFieldBlur, className: labelClassName },
                     labelValue
                 );
             }
