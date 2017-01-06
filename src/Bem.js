@@ -7,8 +7,9 @@ const Bem = {
         modifier = modifier.split(' ');
         let finalClass = [];
 
+        const mSeparator = this.mSeparator;
         modifier.forEach(function (className) {
-            finalClass.push(base + '--' + className);
+            finalClass.push(base + mSeparator + className);
         });
 
         return finalClass.join(' ');

@@ -1,6 +1,6 @@
 import React from 'react';
 import Fuse from 'fuse.js';
-import onClickOutside from 'react-onclickoutside';
+import classnames from 'classnames';
 import Bem from './Bem';
 
 const displayName  = 'SelectSearch';
@@ -18,6 +18,8 @@ const propTypes    = {
     onMount        : React.PropTypes.func.isRequired,
     onBlur         : React.PropTypes.func.isRequired,
     onFocus        : React.PropTypes.func.isRequired,
+    onOpen         : React.PropTypes.func.isRequired,
+    onClose        : React.PropTypes.func.isRequired,
     renderOption   : React.PropTypes.func.isRequired,
     value          : React.PropTypes.oneOfType([
         React.PropTypes.string,
@@ -38,6 +40,8 @@ const defaultProps = {
     onMount        : function () {},
     onBlur         : function () {},
     onFocus        : function () {},
+    onOpen         : function () {},
+    onClose        : function () {},
     onChange       : function () {},
     renderOption   : function (option) {
         return option.name;
@@ -76,36 +80,22 @@ class Component extends React.Component {
             defaultOptions : props.options,
             options        : options,
             highlighted    : null,
-            focus          : false
+            focus          : false,
+            open           : false
         };
 
-        this.classes = {
-            container : (this.props.multiple) ? this.props.className + ' ' + Bem.m(this.props.className, 'multiple') : this.props.className,
-            search    : Bem.e(this.props.className, 'search'),
-            select    : Bem.e(this.props.className, 'select'),
-            options   : Bem.e(this.props.className, 'options'),
-            option    : Bem.e(this.props.className, 'option'),
-            out       : Bem.e(this.props.className, 'out'),
-            label     : Bem.e(this.props.className, 'label'),
-            focus     : (this.props.multiple) ? this.props.className + ' ' + Bem.m(this.props.className, 'multiple focus') : this.props.className + ' ' + Bem.m(this.props.className, 'focus')
-        };
-
-        this.classes.focus     += ' ' + Bem.m(this.props.className, 'select');
-        this.classes.container += ' ' + Bem.m(this.props.className, 'select');
-
-        this.bind();
+        this.updateClassnames(props);
     }
 
-    bind() {
-        this.bound = {
-            onClickOut    : this.onClickOut.bind(this),
-            onFocus       : this.onFocus.bind(this),
-            onBlur        : this.onBlur.bind(this),
-            onChange      : this.onChange.bind(this),
-            onKeyPress    : this.onKeyPress.bind(this),
-            onKeyDown     : this.onKeyDown.bind(this),
-            onKeyUp       : this.onKeyUp.bind(this),
-            toggle        : this.toggle.bind(this)
+    updateClassnames(newProps) {
+        this.classes = {
+            container         : newProps.className,
+            search            : Bem.e(newProps.className, 'search'),
+            select            : Bem.e(newProps.className, 'select'),
+            options           : Bem.e(newProps.className, 'options'),
+            option            : Bem.e(newProps.className, 'option'),
+            out               : Bem.e(newProps.className, 'out'),
+            label             : Bem.e(newProps.className, 'label')
         };
     }
 
@@ -122,21 +112,41 @@ class Component extends React.Component {
     }
 
     componentWillUnmount() {
-        document.removeEventListener('keydown', this.bound.onKeyDown);
-        document.removeEventListener('keypress', this.bound.onKeyPress);
-        document.removeEventListener('keyup', this.bound.onKeyUp);
+        document.removeEventListener('keydown', this.onKeyDown);
+        document.removeEventListener('keypress', this.onKeyPress);
+        document.removeEventListener('keyup', this.onKeyUp);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.className != this.props.className) {
+            this.updateClassnames(nextProps);
+        }
     }
 
     componentDidUpdate(prevProps, prevState) {
         /* Fire callbacks */
         if (this.state.focus && this.state.focus != prevState.focus) {
             this.handleFocus();
+            // Override the context with `null` instead of leaking `this.props` as the context.
             this.props.onFocus.call(null, this.publishOption(), this.state, this.props);
         }
 
         if (!this.state.focus && this.state.focus != prevState.focus) {
             this.handleBlur();
+            // Override the context with `null` instead of leaking `this.props` as the context.
             this.props.onBlur.call(null, this.publishOption(), this.state, this.props);
+        }
+
+        if (this.state.open && this.state.open != prevState.open) {
+            this.handleOpen();
+            // Override the context with `null` instead of leaking `this.props` as the context.
+            this.props.onOpen.call(null, this.publishOption(), this.state, this.props);
+        }
+
+        if (!this.state.open && this.state.open != prevState.open) {
+            this.handleClose();
+            // Override the context with `null` instead of leaking `this.props` as the context.
+            this.props.onClose.call(null, this.publishOption(), this.state, this.props);
         }
 
         if (this.state.highlighted !== prevState.highlighted) {
@@ -149,14 +159,10 @@ class Component extends React.Component {
     /**
      * DOM event handlers
      * -------------------------------------------------------------------------*/
-    onClickOut() {
-        this.onBlur();
-    }
-
-    onBlur() {
-        if (this.props.search && !this.props.multiple) {
-            this.refs.search.blur();
-        }
+    onFieldBlur() {
+        // if (this.props.search && !this.props.multiple) {
+        //     this.refs.search.blur();
+        // }
 
         let search = '';
 
@@ -165,14 +171,12 @@ class Component extends React.Component {
             search = option.name;
         }
 
-        this.setState({focus: false, highlighted: null, search: search});
+        this.setState({focus: false, open: false, highlighted: null, search: search});
     }
 
-    onFocus() {
-        this.setState({focus: true, options: this.state.defaultOptions, search: ''});
-    }
+    onFieldFocus = () => this.setState({focus: true, open: true, options: this.state.defaultOptions, search: ''});
 
-    onChange(e) {
+    onChange = (e) => {
         let value = e.target.value;
 
         if (!value) {
@@ -187,7 +191,7 @@ class Component extends React.Component {
         this.setState({search: value, options: options});
     }
 
-    onKeyPress(e) {
+    onKeyPress = (e) => {
         if (!this.state.options || this.state.options.length < 1) {
             return;
         }
@@ -198,14 +202,18 @@ class Component extends React.Component {
         }
     }
 
-    onKeyDown(e) {
+    onKeyDown = (e) => {
         if (!this.state.focus) {
             return;
         }
 
+        if (!this.state.open) {
+            this.setState({open: true});
+        }
+
         /** Tab */
         // if (e.keyCode === 9) {
-        //     return this.onBlur();
+        //     return this.onFieldBlur();
         // }
 
         /** Arrow Down */
@@ -219,7 +227,7 @@ class Component extends React.Component {
         }
     }
 
-    onKeyUp(e) {
+    onKeyUp = (e) => {
         /** Esc */
         if (e.keyCode === 27) {
             this.handleEsc();
@@ -272,7 +280,7 @@ class Component extends React.Component {
     }
 
     handleEsc() {
-        this.onBlur();
+        this.setState({open: false});
     }
 
     /**
@@ -301,10 +309,18 @@ class Component extends React.Component {
     }
 
     handleFocus() {
-        document.addEventListener('keydown', this.bound.onKeyDown);
-        document.addEventListener('keypress', this.bound.onKeyPress);
-        document.addEventListener('keyup', this.bound.onKeyUp);
+        document.addEventListener('keydown', this.onKeyDown);
+        document.addEventListener('keypress', this.onKeyPress);
+        document.addEventListener('keyup', this.onKeyUp);
+    }
 
+    handleBlur() {
+        document.removeEventListener('keydown', this.onKeyDown);
+        document.removeEventListener('keypress', this.onKeyPress);
+        document.removeEventListener('keyup', this.onKeyUp);
+    }
+
+    handleOpen() {
         if (this.state.options.length > 0 && !this.props.multiple) {
             let element = this.refs.select;
             let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
@@ -315,10 +331,7 @@ class Component extends React.Component {
         }
     }
 
-    handleBlur() {
-        document.removeEventListener('keydown', this.bound.onKeyDown);
-        document.removeEventListener('keypress', this.bound.onKeyPress);
-        document.removeEventListener('keyup', this.bound.onKeyUp);
+    handleClose() {
     }
 
     findIndexByOption(searchOption, options) {
@@ -358,11 +371,11 @@ class Component extends React.Component {
         })[0];
     }
 
-    toggle() {
-        if (this.state.focus) {
-            this.onBlur();
+    toggle = () => {
+        if (this.state.open) {
+            this.handleClose();
         } else {
-            this.onFocus();
+            this.handleOpen();
         }
     }
 
@@ -428,7 +441,7 @@ class Component extends React.Component {
 
         this.placeSelectedFirst(options, option.value);
 
-        this.setState({value: currentValue, search: search, options: options, highlighted: highlighted, focus: this.props.multiple});
+        this.setState({value: currentValue, search: search, options: options, highlighted: highlighted, /*focus: this.props.multiple,*/ open: false});
 
         setTimeout(() => {
             // Override the context with `null` instead of leaking `this.props` as the context.
@@ -474,7 +487,7 @@ class Component extends React.Component {
     }
 
     scrollToSelected() {
-        if (this.props.multiple || this.state.highlighted == null || !this.refs.select || !this.state.focus || this.state.options.length < 1) {
+        if (this.props.multiple || this.state.highlighted == null || !this.refs.select || !this.state.focus || !this.state.open || this.state.options.length < 1) {
             return;
         }
 
@@ -510,15 +523,15 @@ class Component extends React.Component {
 
                 if (this.props.multiple) {
                     if (this.state.value.indexOf(element.value) < 0) {
-                        options.push(<li className={className} onClick={this.chooseOption.bind(this, element.value)} key={element.value + '-option'} data-value={element.value}>{this.props.renderOption(element, this.state, this.props)}</li>);
+                        options.push(<li className={className} onClick={() => this.chooseOption(element.value)} key={element.value + '-option'} data-value={element.value}>{this.props.renderOption(element, this.state, this.props)}</li>);
                     } else {
-                        options.push(<li className={className} onClick={this.removeOption.bind(this, element.value)} key={element.value + '-option'} data-value={element.value}>{this.props.renderOption(element, this.state, this.props)}</li>);
+                        options.push(<li className={className} onClick={() => this.removeOption(element.value)} key={element.value + '-option'} data-value={element.value}>{this.props.renderOption(element, this.state, this.props)}</li>);
                     }
                 } else {
                     if (element.value === this.state.value) {
                         options.push(<li className={className} key={element.value + '-option'} data-value={element.value}>{this.props.renderOption(element)}</li>);
                     } else {
-                        options.push(<li className={className} onClick={this.chooseOption.bind(this, element.value)} key={element.value + '-option'} data-value={element.value}>{this.props.renderOption(element, this.state, this.props)}</li>);
+                        options.push(<li className={className} onClick={() => this.chooseOption(element.value)} key={element.value + '-option'} data-value={element.value}>{this.props.renderOption(element, this.state, this.props)}</li>);
                     }
                 }
             });
@@ -538,7 +551,7 @@ class Component extends React.Component {
 
         let className = this.classes.select;
 
-        if (this.state.focus) {
+        if (this.state.open) {
             className += ' ' + Bem.m(this.classes.select, 'display');
         }
 
@@ -557,10 +570,10 @@ class Component extends React.Component {
             if (this.state.value) {
                 let finalValueOptions = [];
 
-                this.state.value.forEach(function (value, i) {
+                this.state.value.forEach((value, i) => {
                     option = this.findByValue(this.state.defaultOptions, value);
                     finalValueOptions.push(<option key={i} value={option.value}>{option.name}</option>);
-                }.bind(this));
+                });
 
                 outElement = (
                     <select value={this.state.value} className={this.classes.out} name={this.props.name} readOnly multiple>
@@ -585,7 +598,7 @@ class Component extends React.Component {
                     left: '-9999px'
                 };
 
-                outElement = <input type="text" onFocus={this.bound.onFocus} style={outStyle} value={this.state.value} readOnly={true} ref="outInput" name={this.props.name} />;
+                outElement = <input type="text" onFocus={this.onFieldFocus} onBlur={this.onFieldBlur} style={outStyle} value={this.state.value} readOnly={true} ref="outInput" name={this.props.name} />;
             }
         }
 
@@ -598,7 +611,7 @@ class Component extends React.Component {
         if (this.props.search) {
             let name = null;
 
-            searchField = <input name={name} ref="search" onFocus={this.bound.onFocus} onKeyPress={this.bound.onKeyPress} className={this.classes.search} type="search" value={this.state.search} onChange={this.bound.onChange} placeholder={this.props.placeholder} />;
+            searchField = <input name={name} ref="search" onFocus={this.onFieldFocus} onBlur={this.onFieldBlur} onKeyPress={this.onKeyPress} className={this.classes.search} type="search" value={this.state.search} onChange={this.onChange} placeholder={this.props.placeholder} />;
         } else {
             let option;
             let labelValue;
@@ -613,17 +626,19 @@ class Component extends React.Component {
                 labelClassName = this.classes.search;
             }
 
-            searchField = <strong onClick={this.bound.toggle} className={labelClassName}>{labelValue}</strong>;
+            searchField = <strong onClick={this.toggle} className={labelClassName}>{labelValue}</strong>;
         }
 
         return searchField;
     }
 
     render() {
-        let className = (this.state.focus) ? this.classes.focus : this.classes.container;
-
         return (
-            <div className={className} ref="container">
+            <div ref="container" className={classnames(this.classes.container, Bem.m(this.classes.container, 'select'), {
+                [Bem.m(this.classes.container, 'multiple')]: this.props.multiple,
+                [Bem.m(this.classes.container, 'focus')]: this.state.focus,
+                [Bem.m(this.classes.container, 'open')]: this.state.open,
+            })}>
                 {this.renderOutElement()}
                 {this.renderSearchField()}
                 {this.renderOptions()}
@@ -636,12 +651,5 @@ class Component extends React.Component {
 Component.displayName  = displayName;
 Component.propTypes    = propTypes;
 Component.defaultProps = defaultProps;
-
-// add clickOutside method to close dropdowns when opening another
-Component = onClickOutside(Component,{
-    handleClickOutside: function(instance){
-        return instance.bound.onClickOut
-    }
-})
 
 export default Component;

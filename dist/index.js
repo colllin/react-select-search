@@ -14,15 +14,17 @@ var _fuse = require('fuse.js');
 
 var _fuse2 = _interopRequireDefault(_fuse);
 
-var _reactOnclickoutside = require('react-onclickoutside');
+var _classnames2 = require('classnames');
 
-var _reactOnclickoutside2 = _interopRequireDefault(_reactOnclickoutside);
+var _classnames3 = _interopRequireDefault(_classnames2);
 
 var _Bem = require('./Bem');
 
 var _Bem2 = _interopRequireDefault(_Bem);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -45,6 +47,8 @@ var propTypes = {
     onMount: _react2.default.PropTypes.func.isRequired,
     onBlur: _react2.default.PropTypes.func.isRequired,
     onFocus: _react2.default.PropTypes.func.isRequired,
+    onOpen: _react2.default.PropTypes.func.isRequired,
+    onClose: _react2.default.PropTypes.func.isRequired,
     renderOption: _react2.default.PropTypes.func.isRequired,
     value: _react2.default.PropTypes.oneOfType([_react2.default.PropTypes.string, _react2.default.PropTypes.array])
 };
@@ -62,6 +66,8 @@ var defaultProps = {
     onMount: function onMount() {},
     onBlur: function onBlur() {},
     onFocus: function onFocus() {},
+    onOpen: function onOpen() {},
+    onClose: function onClose() {},
     onChange: function onChange() {},
     renderOption: function renderOption(option) {
         return option.name;
@@ -83,6 +89,8 @@ var Component = function (_React$Component) {
 
         var _this = _possibleConstructorReturn(this, (Component.__proto__ || Object.getPrototypeOf(Component)).call(this, props));
 
+        _initialiseProps.call(_this);
+
         var options = props.options;
         var value = !props.value && props.multiple ? [] : props.value;
         var search = '';
@@ -103,39 +111,25 @@ var Component = function (_React$Component) {
             defaultOptions: props.options,
             options: options,
             highlighted: null,
-            focus: false
+            focus: false,
+            open: false
         };
 
-        _this.classes = {
-            container: _this.props.multiple ? _this.props.className + ' ' + _Bem2.default.m(_this.props.className, 'multiple') : _this.props.className,
-            search: _Bem2.default.e(_this.props.className, 'search'),
-            select: _Bem2.default.e(_this.props.className, 'select'),
-            options: _Bem2.default.e(_this.props.className, 'options'),
-            option: _Bem2.default.e(_this.props.className, 'option'),
-            out: _Bem2.default.e(_this.props.className, 'out'),
-            label: _Bem2.default.e(_this.props.className, 'label'),
-            focus: _this.props.multiple ? _this.props.className + ' ' + _Bem2.default.m(_this.props.className, 'multiple focus') : _this.props.className + ' ' + _Bem2.default.m(_this.props.className, 'focus')
-        };
-
-        _this.classes.focus += ' ' + _Bem2.default.m(_this.props.className, 'select');
-        _this.classes.container += ' ' + _Bem2.default.m(_this.props.className, 'select');
-
-        _this.bind();
+        _this.updateClassnames(props);
         return _this;
     }
 
     _createClass(Component, [{
-        key: 'bind',
-        value: function bind() {
-            this.bound = {
-                onClickOut: this.onClickOut.bind(this),
-                onFocus: this.onFocus.bind(this),
-                onBlur: this.onBlur.bind(this),
-                onChange: this.onChange.bind(this),
-                onKeyPress: this.onKeyPress.bind(this),
-                onKeyDown: this.onKeyDown.bind(this),
-                onKeyUp: this.onKeyUp.bind(this),
-                toggle: this.toggle.bind(this)
+        key: 'updateClassnames',
+        value: function updateClassnames(newProps) {
+            this.classes = {
+                container: newProps.className,
+                search: _Bem2.default.e(newProps.className, 'search'),
+                select: _Bem2.default.e(newProps.className, 'select'),
+                options: _Bem2.default.e(newProps.className, 'options'),
+                option: _Bem2.default.e(newProps.className, 'option'),
+                out: _Bem2.default.e(newProps.className, 'out'),
+                label: _Bem2.default.e(newProps.className, 'label')
             };
         }
 
@@ -155,9 +149,16 @@ var Component = function (_React$Component) {
     }, {
         key: 'componentWillUnmount',
         value: function componentWillUnmount() {
-            document.removeEventListener('keydown', this.bound.onKeyDown);
-            document.removeEventListener('keypress', this.bound.onKeyPress);
-            document.removeEventListener('keyup', this.bound.onKeyUp);
+            document.removeEventListener('keydown', this.onKeyDown);
+            document.removeEventListener('keypress', this.onKeyPress);
+            document.removeEventListener('keyup', this.onKeyUp);
+        }
+    }, {
+        key: 'componentWillReceiveProps',
+        value: function componentWillReceiveProps(nextProps) {
+            if (nextProps.className != this.props.className) {
+                this.updateClassnames(nextProps);
+            }
         }
     }, {
         key: 'componentDidUpdate',
@@ -165,12 +166,26 @@ var Component = function (_React$Component) {
             /* Fire callbacks */
             if (this.state.focus && this.state.focus != prevState.focus) {
                 this.handleFocus();
+                // Override the context with `null` instead of leaking `this.props` as the context.
                 this.props.onFocus.call(null, this.publishOption(), this.state, this.props);
             }
 
             if (!this.state.focus && this.state.focus != prevState.focus) {
                 this.handleBlur();
+                // Override the context with `null` instead of leaking `this.props` as the context.
                 this.props.onBlur.call(null, this.publishOption(), this.state, this.props);
+            }
+
+            if (this.state.open && this.state.open != prevState.open) {
+                this.handleOpen();
+                // Override the context with `null` instead of leaking `this.props` as the context.
+                this.props.onOpen.call(null, this.publishOption(), this.state, this.props);
+            }
+
+            if (!this.state.open && this.state.open != prevState.open) {
+                this.handleClose();
+                // Override the context with `null` instead of leaking `this.props` as the context.
+                this.props.onClose.call(null, this.publishOption(), this.state, this.props);
             }
 
             if (this.state.highlighted !== prevState.highlighted) {
@@ -185,16 +200,11 @@ var Component = function (_React$Component) {
          * -------------------------------------------------------------------------*/
 
     }, {
-        key: 'onClickOut',
-        value: function onClickOut() {
-            this.onBlur();
-        }
-    }, {
-        key: 'onBlur',
-        value: function onBlur() {
-            if (this.props.search && !this.props.multiple) {
-                this.refs.search.blur();
-            }
+        key: 'onFieldBlur',
+        value: function onFieldBlur() {
+            // if (this.props.search && !this.props.multiple) {
+            //     this.refs.search.blur();
+            // }
 
             var search = '';
 
@@ -203,78 +213,15 @@ var Component = function (_React$Component) {
                 search = option.name;
             }
 
-            this.setState({ focus: false, highlighted: null, search: search });
+            this.setState({ focus: false, open: false, highlighted: null, search: search });
         }
     }, {
-        key: 'onFocus',
-        value: function onFocus() {
-            this.setState({ focus: true, options: this.state.defaultOptions, search: '' });
-        }
-    }, {
-        key: 'onChange',
-        value: function onChange(e) {
-            var value = e.target.value;
+        key: 'handleArrowDown',
 
-            if (!value) {
-                value = '';
-            }
-
-            var options = this.state.defaultOptions;
-            options = this.getNewOptionsList(options, value);
-
-            this.placeSelectedFirst(options);
-
-            this.setState({ search: value, options: options });
-        }
-    }, {
-        key: 'onKeyPress',
-        value: function onKeyPress(e) {
-            if (!this.state.options || this.state.options.length < 1) {
-                return;
-            }
-
-            /** Enter */
-            if (e.keyCode === 13) {
-                return this.handleEnter();
-            }
-        }
-    }, {
-        key: 'onKeyDown',
-        value: function onKeyDown(e) {
-            if (!this.state.focus) {
-                return;
-            }
-
-            /** Tab */
-            // if (e.keyCode === 9) {
-            //     return this.onBlur();
-            // }
-
-            /** Arrow Down */
-            if (e.keyCode === 40) {
-                this.handleArrowDown();
-            }
-
-            /** Arrow Up */
-            if (e.keyCode === 38) {
-                this.handleArrowUp();
-            }
-        }
-    }, {
-        key: 'onKeyUp',
-        value: function onKeyUp(e) {
-            /** Esc */
-            if (e.keyCode === 27) {
-                this.handleEsc();
-            }
-        }
 
         /**
          * Keyboard actions
          * -------------------------------------------------------------------------*/
-
-    }, {
-        key: 'handleArrowDown',
         value: function handleArrowDown() {
             if (this.state.options.length < 1) {
                 return;
@@ -321,7 +268,7 @@ var Component = function (_React$Component) {
     }, {
         key: 'handleEsc',
         value: function handleEsc() {
-            this.onBlur();
+            this.setState({ open: false });
         }
 
         /**
@@ -358,10 +305,20 @@ var Component = function (_React$Component) {
     }, {
         key: 'handleFocus',
         value: function handleFocus() {
-            document.addEventListener('keydown', this.bound.onKeyDown);
-            document.addEventListener('keypress', this.bound.onKeyPress);
-            document.addEventListener('keyup', this.bound.onKeyUp);
-
+            document.addEventListener('keydown', this.onKeyDown);
+            document.addEventListener('keypress', this.onKeyPress);
+            document.addEventListener('keyup', this.onKeyUp);
+        }
+    }, {
+        key: 'handleBlur',
+        value: function handleBlur() {
+            document.removeEventListener('keydown', this.onKeyDown);
+            document.removeEventListener('keypress', this.onKeyPress);
+            document.removeEventListener('keyup', this.onKeyUp);
+        }
+    }, {
+        key: 'handleOpen',
+        value: function handleOpen() {
             if (this.state.options.length > 0 && !this.props.multiple) {
                 var element = this.refs.select;
                 var viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
@@ -372,12 +329,8 @@ var Component = function (_React$Component) {
             }
         }
     }, {
-        key: 'handleBlur',
-        value: function handleBlur() {
-            document.removeEventListener('keydown', this.bound.onKeyDown);
-            document.removeEventListener('keypress', this.bound.onKeyPress);
-            document.removeEventListener('keyup', this.bound.onKeyUp);
-        }
+        key: 'handleClose',
+        value: function handleClose() {}
     }, {
         key: 'findIndexByOption',
         value: function findIndexByOption(searchOption, options) {
@@ -416,15 +369,6 @@ var Component = function (_React$Component) {
             return source.filter(function (object) {
                 return object.value === value;
             })[0];
-        }
-    }, {
-        key: 'toggle',
-        value: function toggle() {
-            if (this.state.focus) {
-                this.onBlur();
-            } else {
-                this.onFocus();
-            }
         }
     }, {
         key: 'placeSelectedFirst',
@@ -493,7 +437,7 @@ var Component = function (_React$Component) {
 
             this.placeSelectedFirst(options, option.value);
 
-            this.setState({ value: currentValue, search: search, options: options, highlighted: highlighted, focus: this.props.multiple });
+            this.setState({ value: currentValue, search: search, options: options, highlighted: highlighted, /*focus: this.props.multiple,*/open: false });
 
             setTimeout(function () {
                 // Override the context with `null` instead of leaking `this.props` as the context.
@@ -544,7 +488,7 @@ var Component = function (_React$Component) {
     }, {
         key: 'scrollToSelected',
         value: function scrollToSelected() {
-            if (this.props.multiple || this.state.highlighted == null || !this.refs.select || !this.state.focus || this.state.options.length < 1) {
+            if (this.props.multiple || this.state.highlighted == null || !this.refs.select || !this.state.focus || !this.state.open || this.state.options.length < 1) {
                 return;
             }
 
@@ -586,13 +530,17 @@ var Component = function (_React$Component) {
                         if (_this5.state.value.indexOf(element.value) < 0) {
                             options.push(_react2.default.createElement(
                                 'li',
-                                { className: className, onClick: _this5.chooseOption.bind(_this5, element.value), key: element.value + '-option', 'data-value': element.value },
+                                { className: className, onClick: function onClick() {
+                                        return _this5.chooseOption(element.value);
+                                    }, key: element.value + '-option', 'data-value': element.value },
                                 _this5.props.renderOption(element, _this5.state, _this5.props)
                             ));
                         } else {
                             options.push(_react2.default.createElement(
                                 'li',
-                                { className: className, onClick: _this5.removeOption.bind(_this5, element.value), key: element.value + '-option', 'data-value': element.value },
+                                { className: className, onClick: function onClick() {
+                                        return _this5.removeOption(element.value);
+                                    }, key: element.value + '-option', 'data-value': element.value },
                                 _this5.props.renderOption(element, _this5.state, _this5.props)
                             ));
                         }
@@ -606,7 +554,9 @@ var Component = function (_React$Component) {
                         } else {
                             options.push(_react2.default.createElement(
                                 'li',
-                                { className: className, onClick: _this5.chooseOption.bind(_this5, element.value), key: element.value + '-option', 'data-value': element.value },
+                                { className: className, onClick: function onClick() {
+                                        return _this5.chooseOption(element.value);
+                                    }, key: element.value + '-option', 'data-value': element.value },
                                 _this5.props.renderOption(element, _this5.state, _this5.props)
                             ));
                         }
@@ -628,7 +578,7 @@ var Component = function (_React$Component) {
 
             var className = this.classes.select;
 
-            if (this.state.focus) {
+            if (this.state.open) {
                 className += ' ' + _Bem2.default.m(this.classes.select, 'display');
             }
 
@@ -652,13 +602,13 @@ var Component = function (_React$Component) {
                         var finalValueOptions = [];
 
                         _this6.state.value.forEach(function (value, i) {
-                            option = this.findByValue(this.state.defaultOptions, value);
+                            option = _this6.findByValue(_this6.state.defaultOptions, value);
                             finalValueOptions.push(_react2.default.createElement(
                                 'option',
                                 { key: i, value: option.value },
                                 option.name
                             ));
-                        }.bind(_this6));
+                        });
 
                         outElement = _react2.default.createElement(
                             'select',
@@ -688,7 +638,7 @@ var Component = function (_React$Component) {
                         left: '-9999px'
                     };
 
-                    outElement = _react2.default.createElement('input', { type: 'text', onFocus: this.bound.onFocus, style: outStyle, value: this.state.value, readOnly: true, ref: 'outInput', name: this.props.name });
+                    outElement = _react2.default.createElement('input', { type: 'text', onFocus: this.onFieldFocus, onBlur: this.onFieldBlur, style: outStyle, value: this.state.value, readOnly: true, ref: 'outInput', name: this.props.name });
                 }
             }
 
@@ -702,7 +652,7 @@ var Component = function (_React$Component) {
             if (this.props.search) {
                 var name = null;
 
-                searchField = _react2.default.createElement('input', { name: name, ref: 'search', onFocus: this.bound.onFocus, onKeyPress: this.bound.onKeyPress, className: this.classes.search, type: 'search', value: this.state.search, onChange: this.bound.onChange, placeholder: this.props.placeholder });
+                searchField = _react2.default.createElement('input', { name: name, ref: 'search', onFocus: this.onFieldFocus, onBlur: this.onFieldBlur, onKeyPress: this.onKeyPress, className: this.classes.search, type: 'search', value: this.state.search, onChange: this.onChange, placeholder: this.props.placeholder });
             } else {
                 var option = void 0;
                 var labelValue = void 0;
@@ -719,7 +669,7 @@ var Component = function (_React$Component) {
 
                 searchField = _react2.default.createElement(
                     'strong',
-                    { onClick: this.bound.toggle, className: labelClassName },
+                    { onClick: this.toggle, className: labelClassName },
                     labelValue
                 );
             }
@@ -729,11 +679,11 @@ var Component = function (_React$Component) {
     }, {
         key: 'render',
         value: function render() {
-            var className = this.state.focus ? this.classes.focus : this.classes.container;
+            var _classnames;
 
             return _react2.default.createElement(
                 'div',
-                { className: className, ref: 'container' },
+                { ref: 'container', className: (0, _classnames3.default)(this.classes.container, _Bem2.default.m(this.classes.container, 'select'), (_classnames = {}, _defineProperty(_classnames, _Bem2.default.m(this.classes.container, 'multiple'), this.props.multiple), _defineProperty(_classnames, _Bem2.default.m(this.classes.container, 'focus'), this.state.focus), _defineProperty(_classnames, _Bem2.default.m(this.classes.container, 'open'), this.state.open), _classnames)) },
                 this.renderOutElement(),
                 this.renderSearchField(),
                 this.renderOptions()
@@ -744,15 +694,82 @@ var Component = function (_React$Component) {
     return Component;
 }(_react2.default.Component);
 
+var _initialiseProps = function _initialiseProps() {
+    var _this7 = this;
+
+    this.onFieldFocus = function () {
+        return _this7.setState({ focus: true, open: true, options: _this7.state.defaultOptions, search: '' });
+    };
+
+    this.onChange = function (e) {
+        var value = e.target.value;
+
+        if (!value) {
+            value = '';
+        }
+
+        var options = _this7.state.defaultOptions;
+        options = _this7.getNewOptionsList(options, value);
+
+        _this7.placeSelectedFirst(options);
+
+        _this7.setState({ search: value, options: options });
+    };
+
+    this.onKeyPress = function (e) {
+        if (!_this7.state.options || _this7.state.options.length < 1) {
+            return;
+        }
+
+        /** Enter */
+        if (e.keyCode === 13) {
+            return _this7.handleEnter();
+        }
+    };
+
+    this.onKeyDown = function (e) {
+        if (!_this7.state.focus) {
+            return;
+        }
+
+        if (!_this7.state.open) {
+            _this7.setState({ open: true });
+        }
+
+        /** Tab */
+        // if (e.keyCode === 9) {
+        //     return this.onFieldBlur();
+        // }
+
+        /** Arrow Down */
+        if (e.keyCode === 40) {
+            _this7.handleArrowDown();
+        }
+
+        /** Arrow Up */
+        if (e.keyCode === 38) {
+            _this7.handleArrowUp();
+        }
+    };
+
+    this.onKeyUp = function (e) {
+        /** Esc */
+        if (e.keyCode === 27) {
+            _this7.handleEsc();
+        }
+    };
+
+    this.toggle = function () {
+        if (_this7.state.open) {
+            _this7.handleClose();
+        } else {
+            _this7.handleOpen();
+        }
+    };
+};
+
 Component.displayName = displayName;
 Component.propTypes = propTypes;
 Component.defaultProps = defaultProps;
-
-// add clickOutside method to close dropdowns when opening another
-Component = (0, _reactOnclickoutside2.default)(Component, {
-    handleClickOutside: function handleClickOutside(instance) {
-        return instance.bound.onClickOut;
-    }
-});
 
 exports.default = Component;

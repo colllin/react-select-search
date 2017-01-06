@@ -12,8 +12,9 @@ var Bem = {
         modifier = modifier.split(' ');
         var finalClass = [];
 
+        var mSeparator = this.mSeparator;
         modifier.forEach(function (className) {
-            finalClass.push(base + '--' + className);
+            finalClass.push(base + mSeparator + className);
         });
 
         return finalClass.join(' ');
