@@ -653,7 +653,7 @@ var Component = function (_React$Component) {
 
                 searchField = _react2.default.createElement(
                     'a',
-                    { onFocus: this.fieldDidFocus, onClick: this.toggle, onBlur: this.fieldDidBlur, className: labelClassName },
+                    { href: 'javascript://', onFocus: this.fieldDidFocus /*onClick={this.toggle}*/, onBlur: this.fieldDidBlur, className: labelClassName },
                     labelValue
                 );
             }
