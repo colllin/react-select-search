@@ -472,9 +472,6 @@ var Component = function (_React$Component) {
          * -------------------------------------------------------------------------*/
 
     }, {
-        key: 'renderOption',
-        value: function renderOption() {}
-    }, {
         key: 'renderOptions',
         value: function renderOptions() {
             var _this3 = this;
@@ -501,7 +498,7 @@ var Component = function (_React$Component) {
                             options.push(_react2.default.createElement(
                                 'li',
                                 { className: className, onClick: function onClick() {
-                                        debugger;
+                                        console.log('!', element.value);
                                         _this3.chooseOption(element.value);
                                     }, key: element.value + '-option', 'data-value': element.value },
                                 _this3.props.renderOption(element, _this3.state, _this3.props)
@@ -510,7 +507,7 @@ var Component = function (_React$Component) {
                             options.push(_react2.default.createElement(
                                 'li',
                                 { className: className, onClick: function onClick() {
-                                        debugger;
+                                        console.log('!', element.value);
                                         _this3.removeOption(element.value);
                                     }, key: element.value + '-option', 'data-value': element.value },
                                 _this3.props.renderOption(element, _this3.state, _this3.props)
@@ -527,7 +524,7 @@ var Component = function (_React$Component) {
                             options.push(_react2.default.createElement(
                                 'li',
                                 { className: className, onClick: function onClick() {
-                                        debugger;
+                                        console.log('!', element.value);
                                         _this3.chooseOption(element.value);
                                     }, key: element.value + '-option', 'data-value': element.value },
                                 _this3.props.renderOption(element, _this3.state, _this3.props)
