@@ -159,7 +159,7 @@ class Component extends React.Component {
     /**
      * DOM event handlers
      * -------------------------------------------------------------------------*/
-    onFieldBlur() {
+    onFieldBlur = () => {
         // if (this.props.search && !this.props.multiple) {
         //     this.refs.search.blur();
         // }

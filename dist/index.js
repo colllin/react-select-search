@@ -200,22 +200,6 @@ var Component = function (_React$Component) {
          * -------------------------------------------------------------------------*/
 
     }, {
-        key: 'onFieldBlur',
-        value: function onFieldBlur() {
-            // if (this.props.search && !this.props.multiple) {
-            //     this.refs.search.blur();
-            // }
-
-            var search = '';
-
-            if (this.state.value && this.props.search && !this.props.multiple) {
-                var option = this.findByValue(null, this.state.value);
-                search = option.name;
-            }
-
-            this.setState({ focus: false, open: false, highlighted: null, search: search });
-        }
-    }, {
         key: 'handleArrowDown',
 
 
@@ -696,6 +680,21 @@ var Component = function (_React$Component) {
 
 var _initialiseProps = function _initialiseProps() {
     var _this7 = this;
+
+    this.onFieldBlur = function () {
+        // if (this.props.search && !this.props.multiple) {
+        //     this.refs.search.blur();
+        // }
+
+        var search = '';
+
+        if (_this7.state.value && _this7.props.search && !_this7.props.multiple) {
+            var option = _this7.findByValue(null, _this7.state.value);
+            search = option.name;
+        }
+
+        _this7.setState({ focus: false, open: false, highlighted: null, search: search });
+    };
 
     this.onFieldFocus = function () {
         return _this7.setState({ focus: true, open: true, options: _this7.state.defaultOptions, search: '' });
