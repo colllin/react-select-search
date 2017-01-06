@@ -125,28 +125,12 @@ class Component extends React.Component {
 
     componentDidUpdate(prevProps, prevState) {
         /* Fire callbacks */
-        if (this.state.focus && this.state.focus != prevState.focus) {
-            this.handleFocus();
-            // Override the context with `null` instead of leaking `this.props` as the context.
-            this.props.onFocus.call(null, this.publishOption(), this.state, this.props);
+        if (this.state.focus != prevState.focus) {
+            this.focusDidUpdate(prevState.focus);
         }
 
-        if (!this.state.focus && this.state.focus != prevState.focus) {
-            this.handleBlur();
-            // Override the context with `null` instead of leaking `this.props` as the context.
-            this.props.onBlur.call(null, this.publishOption(), this.state, this.props);
-        }
-
-        if (this.state.open && this.state.open != prevState.open) {
-            this.handleOpen();
-            // Override the context with `null` instead of leaking `this.props` as the context.
-            this.props.onOpen.call(null, this.publishOption(), this.state, this.props);
-        }
-
-        if (!this.state.open && this.state.open != prevState.open) {
-            this.handleClose();
-            // Override the context with `null` instead of leaking `this.props` as the context.
-            this.props.onClose.call(null, this.publishOption(), this.state, this.props);
+        if (this.state.open != prevState.open) {
+            this.openDidUpdate(prevState.open);
         }
 
         if (this.state.highlighted !== prevState.highlighted) {
@@ -204,7 +188,7 @@ class Component extends React.Component {
 
         /** Enter */
         if (e.keyCode === 13) {
-            return this.handleEnter();
+            return this.enterWasPressed();
         }
     }
 
@@ -236,7 +220,7 @@ class Component extends React.Component {
     onKeyUp = (e) => {
         /** Esc */
         if (e.keyCode === 27) {
-            this.handleEsc();
+            this.escWasPressed();
         }
     }
 
@@ -281,11 +265,11 @@ class Component extends React.Component {
         this.setState({highlighted: highlighted});
     }
 
-    handleEnter() {
+    enterWasPressed() {
         this.chooseOption();
     }
 
-    handleEsc() {
+    escWasPressed() {
         this.setState({open: false});
     }
 
@@ -314,30 +298,41 @@ class Component extends React.Component {
         });
     }
 
-    handleFocus() {
-        document.addEventListener('keydown', this.onKeyDown);
-        document.addEventListener('keypress', this.onKeyPress);
-        document.addEventListener('keyup', this.onKeyUp);
-    }
+    focusDidUpdate(prevFocus) {
+        if (this.state.focus) {
+            document.addEventListener('keydown', this.onKeyDown);
+            document.addEventListener('keypress', this.onKeyPress);
+            document.addEventListener('keyup', this.onKeyUp);
 
-    handleBlur() {
-        document.removeEventListener('keydown', this.onKeyDown);
-        document.removeEventListener('keypress', this.onKeyPress);
-        document.removeEventListener('keyup', this.onKeyUp);
-    }
+            // Override the context with `null` instead of leaking `this.props` as the context.
+            this.props.onFocus.call(null, this.publishOption(), this.state, this.props);
+        } else {
+            document.removeEventListener('keydown', this.onKeyDown);
+            document.removeEventListener('keypress', this.onKeyPress);
+            document.removeEventListener('keyup', this.onKeyUp);
 
-    handleOpen() {
-        if (this.state.options.length > 0 && !this.props.multiple) {
-            let element = this.refs.select;
-            let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-            let elementPos     = element.getBoundingClientRect();
-            let selectHeight   = viewportHeight - elementPos.top - 20;
-
-            element.style.maxHeight = selectHeight + 'px';
+            // Override the context with `null` instead of leaking `this.props` as the context.
+            this.props.onBlur.call(null, this.publishOption(), this.state, this.props);
         }
     }
 
-    handleClose() {
+    openDidUpdate(prevOpen) {
+        if (this.state.open) {
+            if (this.state.options.length > 0 && !this.props.multiple) {
+                let element = this.refs.select;
+                let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+                let elementPos     = element.getBoundingClientRect();
+                let selectHeight   = viewportHeight - elementPos.top - 20;
+
+                element.style.maxHeight = selectHeight + 'px';
+            }
+
+            // Override the context with `null` instead of leaking `this.props` as the context.
+            this.props.onOpen.call(null, this.publishOption(), this.state, this.props);
+        } else {
+            // Override the context with `null` instead of leaking `this.props` as the context.
+            this.props.onClose.call(null, this.publishOption(), this.state, this.props);
+        }
     }
 
     findIndexByOption(searchOption, options) {

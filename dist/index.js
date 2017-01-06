@@ -164,28 +164,12 @@ var Component = function (_React$Component) {
         key: 'componentDidUpdate',
         value: function componentDidUpdate(prevProps, prevState) {
             /* Fire callbacks */
-            if (this.state.focus && this.state.focus != prevState.focus) {
-                this.handleFocus();
-                // Override the context with `null` instead of leaking `this.props` as the context.
-                this.props.onFocus.call(null, this.publishOption(), this.state, this.props);
+            if (this.state.focus != prevState.focus) {
+                this.focusDidUpdate(prevState.focus);
             }
 
-            if (!this.state.focus && this.state.focus != prevState.focus) {
-                this.handleBlur();
-                // Override the context with `null` instead of leaking `this.props` as the context.
-                this.props.onBlur.call(null, this.publishOption(), this.state, this.props);
-            }
-
-            if (this.state.open && this.state.open != prevState.open) {
-                this.handleOpen();
-                // Override the context with `null` instead of leaking `this.props` as the context.
-                this.props.onOpen.call(null, this.publishOption(), this.state, this.props);
-            }
-
-            if (!this.state.open && this.state.open != prevState.open) {
-                this.handleClose();
-                // Override the context with `null` instead of leaking `this.props` as the context.
-                this.props.onClose.call(null, this.publishOption(), this.state, this.props);
+            if (this.state.open != prevState.open) {
+                this.openDidUpdate(prevState.open);
             }
 
             if (this.state.highlighted !== prevState.highlighted) {
@@ -251,13 +235,13 @@ var Component = function (_React$Component) {
             this.setState({ highlighted: highlighted });
         }
     }, {
-        key: 'handleEnter',
-        value: function handleEnter() {
+        key: 'enterWasPressed',
+        value: function enterWasPressed() {
             this.chooseOption();
         }
     }, {
-        key: 'handleEsc',
-        value: function handleEsc() {
+        key: 'escWasPressed',
+        value: function escWasPressed() {
             this.setState({ open: false });
         }
 
@@ -293,34 +277,44 @@ var Component = function (_React$Component) {
             });
         }
     }, {
-        key: 'handleFocus',
-        value: function handleFocus() {
-            document.addEventListener('keydown', this.onKeyDown);
-            document.addEventListener('keypress', this.onKeyPress);
-            document.addEventListener('keyup', this.onKeyUp);
-        }
-    }, {
-        key: 'handleBlur',
-        value: function handleBlur() {
-            document.removeEventListener('keydown', this.onKeyDown);
-            document.removeEventListener('keypress', this.onKeyPress);
-            document.removeEventListener('keyup', this.onKeyUp);
-        }
-    }, {
-        key: 'handleOpen',
-        value: function handleOpen() {
-            if (this.state.options.length > 0 && !this.props.multiple) {
-                var element = this.refs.select;
-                var viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-                var elementPos = element.getBoundingClientRect();
-                var selectHeight = viewportHeight - elementPos.top - 20;
+        key: 'focusDidUpdate',
+        value: function focusDidUpdate(prevFocus) {
+            if (this.state.focus) {
+                document.addEventListener('keydown', this.onKeyDown);
+                document.addEventListener('keypress', this.onKeyPress);
+                document.addEventListener('keyup', this.onKeyUp);
 
-                element.style.maxHeight = selectHeight + 'px';
+                // Override the context with `null` instead of leaking `this.props` as the context.
+                this.props.onFocus.call(null, this.publishOption(), this.state, this.props);
+            } else {
+                document.removeEventListener('keydown', this.onKeyDown);
+                document.removeEventListener('keypress', this.onKeyPress);
+                document.removeEventListener('keyup', this.onKeyUp);
+
+                // Override the context with `null` instead of leaking `this.props` as the context.
+                this.props.onBlur.call(null, this.publishOption(), this.state, this.props);
             }
         }
     }, {
-        key: 'handleClose',
-        value: function handleClose() {}
+        key: 'openDidUpdate',
+        value: function openDidUpdate(prevOpen) {
+            if (this.state.open) {
+                if (this.state.options.length > 0 && !this.props.multiple) {
+                    var element = this.refs.select;
+                    var viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+                    var elementPos = element.getBoundingClientRect();
+                    var selectHeight = viewportHeight - elementPos.top - 20;
+
+                    element.style.maxHeight = selectHeight + 'px';
+                }
+
+                // Override the context with `null` instead of leaking `this.props` as the context.
+                this.props.onOpen.call(null, this.publishOption(), this.state, this.props);
+            } else {
+                // Override the context with `null` instead of leaking `this.props` as the context.
+                this.props.onClose.call(null, this.publishOption(), this.state, this.props);
+            }
+        }
     }, {
         key: 'findIndexByOption',
         value: function findIndexByOption(searchOption, options) {
@@ -714,7 +708,7 @@ var _initialiseProps = function _initialiseProps() {
 
         /** Enter */
         if (e.keyCode === 13) {
-            return _this5.handleEnter();
+            return _this5.enterWasPressed();
         }
     };
 
@@ -746,7 +740,7 @@ var _initialiseProps = function _initialiseProps() {
     this.onKeyUp = function (e) {
         /** Esc */
         if (e.keyCode === 27) {
-            _this5.handleEsc();
+            _this5.escWasPressed();
         }
     };
 
