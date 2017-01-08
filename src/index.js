@@ -293,6 +293,13 @@ class Component extends React.Component {
         });
     }
 
+    updateComponentHasFocus() {
+        const componentHasFocus = this.state.fieldHasFocus || this.state.menuPressed;
+        if (componentHasFocus != this.state.componentHasFocus) {
+            this.setState({componentHasFocus: componentHasFocus});
+        }
+    }
+
     componentFocusDidUpdate(prevFocus) {
         if (this.state.componentHasFocus) {
             this.setState({options: this.state.defaultOptions, search: ''});
@@ -316,6 +323,8 @@ class Component extends React.Component {
     }
 
     fieldFocusDidUpdate(prevFocus) {
+        this.updateComponentHasFocus();
+
         if (this.state.fieldHasFocus) {
             // document.addEventListener('keydown', this.onKeyDown);
             // document.addEventListener('keypress', this.onKeyPress);
@@ -340,6 +349,8 @@ class Component extends React.Component {
     }
 
     menuPressedDidUpdate(prevPressed) {
+        this.updateComponentHasFocus();
+
         if (this.state.menuPressed) {
 
         } else {
