@@ -291,11 +291,20 @@ var Component = function (_React$Component) {
         key: 'componentFocusDidUpdate',
         value: function componentFocusDidUpdate(prevFocus) {
             if (this.state.componentHasFocus) {
+                this.setState({ options: this.state.defaultOptions, search: '' });
+
                 // Override the context with `null` instead of leaking `this.props` as the context.
                 this.props.onFocus.call(null, this.publishOption(), this.state, this.props);
             } else {
+                var search = '';
+
+                if (this.state.value && this.props.search && !this.props.multiple) {
+                    var option = this.findByValue(null, this.state.value);
+                    search = option.name;
+                }
+
                 // The menu can't be open if the component isn't focused.
-                this.setState({ menuOpen: false });
+                this.setState({ menuOpen: false, highlighted: null, search: search });
 
                 // Override the context with `null` instead of leaking `this.props` as the context.
                 this.props.onBlur.call(null, this.publishOption(), this.state, this.props);
@@ -702,22 +711,11 @@ var _initialiseProps = function _initialiseProps() {
     var _this5 = this;
 
     this.fieldDidFocus = function () {
-        return _this5.setState({ fieldHasFocus: true, menuOpen: true, options: _this5.state.defaultOptions, search: '' });
+        return _this5.setState({ fieldHasFocus: true });
     };
 
     this.fieldDidBlur = function () {
-        // if (this.props.search && !this.props.multiple) {
-        //     this.refs.search.blur();
-        // }
-
-        var search = '';
-
-        if (_this5.state.value && _this5.props.search && !_this5.props.multiple) {
-            var option = _this5.findByValue(null, _this5.state.value);
-            search = option.name;
-        }
-
-        _this5.setState({ fieldHasFocus: false, menuOpen: false, highlighted: null, search: search });
+        return _this5.setState({ fieldHasFocus: false });
     };
 
     this.searchDidChange = function (e) {

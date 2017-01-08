@@ -158,21 +158,8 @@ class Component extends React.Component {
     /**
      * DOM event handlers
      * -------------------------------------------------------------------------*/
-    fieldDidFocus = () => this.setState({fieldHasFocus: true, menuOpen: true, options: this.state.defaultOptions, search: ''});
-    fieldDidBlur = () => {
-        // if (this.props.search && !this.props.multiple) {
-        //     this.refs.search.blur();
-        // }
-
-        let search = '';
-
-        if (this.state.value && this.props.search && !this.props.multiple) {
-            let option = this.findByValue(null, this.state.value);
-            search = option.name;
-        }
-
-        this.setState({fieldHasFocus: false, menuOpen: false, highlighted: null, search: search});
-    }
+    fieldDidFocus = () => this.setState({fieldHasFocus: true});
+    fieldDidBlur = () => this.setState({fieldHasFocus: false});
 
     searchDidChange = (e) => {
         let value = e.target.value;
@@ -308,11 +295,20 @@ class Component extends React.Component {
 
     componentFocusDidUpdate(prevFocus) {
         if (this.state.componentHasFocus) {
+            this.setState({options: this.state.defaultOptions, search: ''});
+
             // Override the context with `null` instead of leaking `this.props` as the context.
             this.props.onFocus.call(null, this.publishOption(), this.state, this.props);
         } else {
+            let search = '';
+
+            if (this.state.value && this.props.search && !this.props.multiple) {
+                let option = this.findByValue(null, this.state.value);
+                search = option.name;
+            }
+
             // The menu can't be open if the component isn't focused.
-            this.setState({menuOpen: false});
+            this.setState({menuOpen: false, highlighted: null, search: search});
 
             // Override the context with `null` instead of leaking `this.props` as the context.
             this.props.onBlur.call(null, this.publishOption(), this.state, this.props);
