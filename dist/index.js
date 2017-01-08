@@ -470,10 +470,10 @@ var Component = function (_React$Component) {
 
             this.placeSelectedFirst(options, option.value);
 
-            this.setState({ value: currentValue, search: search, options: options, highlighted: highlighted, /*fieldHasFocus: this.props.multiple,*/menuOpen: false });
+            this.setState({ value: currentValue, search: search, options: options, highlighted: highlighted, menuOpen: false });
 
             if (this.props.search && !this.props.multiple) {
-                this.refs.search.blur();
+                this.refs.field.select();
             }
         }
     }, {
@@ -683,7 +683,7 @@ var Component = function (_React$Component) {
             if (this.props.search) {
                 var name = null;
 
-                searchField = _react2.default.createElement('input', _extends({}, focusEvents, keyboardEvents, { name: name, ref: 'search', className: this.classes.search, type: 'search', value: this.state.search, onChange: this.searchDidChange, placeholder: this.props.placeholder }));
+                searchField = _react2.default.createElement('input', _extends({}, focusEvents, keyboardEvents, { name: name, ref: 'field', className: this.classes.search, type: 'search', value: this.state.search, onChange: this.searchDidChange, placeholder: this.props.placeholder }));
             } else {
                 var option = void 0;
                 var labelValue = void 0;
@@ -700,7 +700,7 @@ var Component = function (_React$Component) {
 
                 searchField = _react2.default.createElement(
                     'a',
-                    _extends({ href: 'javascript://' }, focusEvents, keyboardEvents, { onClick: this.toggle, className: labelClassName }),
+                    _extends({ href: 'javascript://' }, focusEvents, keyboardEvents, { ref: 'field', onClick: this.toggle, className: labelClassName }),
                     labelValue
                 );
             }
@@ -804,7 +804,7 @@ var _initialiseProps = function _initialiseProps() {
     };
 
     this.menuDidUnpress = function () {
-        _this5.refs.search && _this5.refs.search.focus();
+        _this5.refs.field && _this5.refs.field.focus();
         _this5.setState({ menuPressed: false });
     };
 };

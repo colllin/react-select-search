@@ -441,7 +441,7 @@ class Component extends React.Component {
 
     menuDidPress = () => this.setState({menuPressed: true});
     menuDidUnpress = () => {
-        this.refs.search && this.refs.search.focus();
+        this.refs.field && this.refs.field.focus();
         this.setState({menuPressed: false});
     }
 
@@ -480,10 +480,10 @@ class Component extends React.Component {
 
         this.placeSelectedFirst(options, option.value);
 
-        this.setState({value: currentValue, search: search, options: options, highlighted: highlighted, /*fieldHasFocus: this.props.multiple,*/ menuOpen: false});
+        this.setState({value: currentValue, search: search, options: options, highlighted: highlighted, menuOpen: false});
 
         if (this.props.search && !this.props.multiple) {
-            this.refs.search.blur();
+            this.refs.field.select();
         }
     }
 
@@ -655,7 +655,7 @@ class Component extends React.Component {
         if (this.props.search) {
             let name = null;
 
-            searchField = <input {...focusEvents} {...keyboardEvents} name={name} ref="search" className={this.classes.search} type="search" value={this.state.search} onChange={this.searchDidChange} placeholder={this.props.placeholder} />;
+            searchField = <input {...focusEvents} {...keyboardEvents} name={name} ref="field" className={this.classes.search} type="search" value={this.state.search} onChange={this.searchDidChange} placeholder={this.props.placeholder} />;
         } else {
             let option;
             let labelValue;
@@ -670,7 +670,7 @@ class Component extends React.Component {
                 labelClassName = this.classes.search;
             }
 
-            searchField = <a href="javascript://" {...focusEvents} {...keyboardEvents} onClick={this.toggle} className={labelClassName}>{labelValue}</a>;
+            searchField = <a href="javascript://" {...focusEvents} {...keyboardEvents} ref="field" onClick={this.toggle} className={labelClassName}>{labelValue}</a>;
         }
 
         return searchField;
