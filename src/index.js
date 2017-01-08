@@ -314,18 +314,17 @@ class Component extends React.Component {
             this.props.onBlur.call(null, this.publishOption(), this.state, this.props);
         }
     }
-    // fieldFocusDidUpdate(prevFocus) {
-    //     if (this.state.fieldHasFocus) {
-    //         // document.addEventListener('keydown', this.onKeyDown);
-    //         // document.addEventListener('keypress', this.onKeyPress);
-    //         // document.addEventListener('keyup', this.onKeyUp);
-    //
-    //     } else {
-    //         // document.removeEventListener('keydown', this.onKeyDown);
-    //         // document.removeEventListener('keypress', this.onKeyPress);
-    //         // document.removeEventListener('keyup', this.onKeyUp);
-    //     }
-    // }
+    fieldFocusDidUpdate(prevFocus) {
+        if (this.state.fieldHasFocus) {
+            // document.addEventListener('keydown', this.onKeyDown);
+            // document.addEventListener('keypress', this.onKeyPress);
+            // document.addEventListener('keyup', this.onKeyUp);
+        } else {
+            // document.removeEventListener('keydown', this.onKeyDown);
+            // document.removeEventListener('keypress', this.onKeyPress);
+            // document.removeEventListener('keyup', this.onKeyUp);
+        }
+    }
 
     menuOpenDidUpdate(prevOpen) {
         if (this.state.menuOpen) {
