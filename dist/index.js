@@ -337,6 +337,11 @@ var Component = function (_React$Component) {
             }
         }
     }, {
+        key: 'menuPressedDidUpdate',
+        value: function menuPressedDidUpdate(prevPressed) {
+            if (this.state.menuPressed) {} else {}
+        }
+    }, {
         key: 'optimizeMenuHeight',
         value: function optimizeMenuHeight() {
             if (this.state.options.length > 0 && !this.props.multiple) {
@@ -786,7 +791,7 @@ var _initialiseProps = function _initialiseProps() {
     };
 
     this.menuDidUnpress = function () {
-        _this5.refs.search.focus();
+        _this5.refs.search && _this5.refs.search.focus();
         _this5.setState({ menuPressed: false });
     };
 };

@@ -314,6 +314,7 @@ class Component extends React.Component {
             this.props.onBlur.call(null, this.publishOption(), this.state, this.props);
         }
     }
+
     fieldFocusDidUpdate(prevFocus) {
         if (this.state.fieldHasFocus) {
             // document.addEventListener('keydown', this.onKeyDown);
@@ -335,6 +336,14 @@ class Component extends React.Component {
         } else {
             // Override the context with `null` instead of leaking `this.props` as the context.
             this.props.onClose.call(null, this.publishOption(), this.state, this.props);
+        }
+    }
+
+    menuPressedDidUpdate(prevPressed) {
+        if (this.state.menuPressed) {
+
+        } else {
+
         }
     }
 
@@ -420,7 +429,7 @@ class Component extends React.Component {
 
     menuDidPress = () => this.setState({menuPressed: true});
     menuDidUnpress = () => {
-        this.refs.search.focus()
+        this.refs.search && this.refs.search.focus();
         this.setState({menuPressed: false});
     }
 
