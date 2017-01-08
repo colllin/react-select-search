@@ -288,6 +288,14 @@ var Component = function (_React$Component) {
             });
         }
     }, {
+        key: 'updateComponentHasFocus',
+        value: function updateComponentHasFocus() {
+            var componentHasFocus = this.state.fieldHasFocus || this.state.menuPressed;
+            if (componentHasFocus != this.state.componentHasFocus) {
+                this.setState({ componentHasFocus: componentHasFocus });
+            }
+        }
+    }, {
         key: 'componentFocusDidUpdate',
         value: function componentFocusDidUpdate(prevFocus) {
             if (this.state.componentHasFocus) {
@@ -313,6 +321,8 @@ var Component = function (_React$Component) {
     }, {
         key: 'fieldFocusDidUpdate',
         value: function fieldFocusDidUpdate(prevFocus) {
+            this.updateComponentHasFocus();
+
             if (this.state.fieldHasFocus) {
                 // document.addEventListener('keydown', this.onKeyDown);
                 // document.addEventListener('keypress', this.onKeyPress);
@@ -339,6 +349,8 @@ var Component = function (_React$Component) {
     }, {
         key: 'menuPressedDidUpdate',
         value: function menuPressedDidUpdate(prevPressed) {
+            this.updateComponentHasFocus();
+
             if (this.state.menuPressed) {} else {}
         }
     }, {
