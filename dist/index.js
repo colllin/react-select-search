@@ -113,8 +113,9 @@ var Component = function (_React$Component) {
             defaultOptions: props.options,
             options: options,
             highlighted: null,
-            focus: false,
-            open: false
+            fieldHasFocus: false,
+            componentHasFocus: false,
+            menuOpen: false
         };
 
         _this.updateClassnames(props);
@@ -165,15 +166,23 @@ var Component = function (_React$Component) {
     }, {
         key: 'componentDidUpdate',
         value: function componentDidUpdate(prevProps, prevState) {
+            if (this.state.componentHasFocus != prevState.componentHasFocus) {
+                this.componentFocusDidUpdate(prevState.componentHasFocus);
+            }
+
+            if (this.state.fieldHasFocus != prevState.fieldHasFocus) {
+                this.fieldFocusDidUpdate(prevState.fieldHasFocus);
+            }
+
+            if (this.state.menuPressed != prevState.menuPressed) {
+                this.menuPressedDidUpdate(prevState.menuPressed);
+            }
+
+            if (this.state.menuOpen != prevState.menuOpen) {
+                this.menuOpenDidUpdate(prevState.menuOpen);
+            }
+
             /* Fire callbacks */
-            if (this.state.focus != prevState.focus) {
-                this.focusDidUpdate(prevState.focus);
-            }
-
-            if (this.state.open != prevState.open) {
-                this.openDidUpdate(prevState.open);
-            }
-
             if (this.state.highlighted !== prevState.highlighted) {
                 // Override the context with `null` instead of leaking `this.props` as the context.
                 this.props.onHighlight.call(null, this.state.options[this.state.highlighted], this.state, this.props);
@@ -244,7 +253,7 @@ var Component = function (_React$Component) {
     }, {
         key: 'escWasPressed',
         value: function escWasPressed() {
-            this.setState({ open: false });
+            this.setState({ menuOpen: false });
         }
 
         /**
@@ -279,42 +288,55 @@ var Component = function (_React$Component) {
             });
         }
     }, {
-        key: 'focusDidUpdate',
-        value: function focusDidUpdate(prevFocus) {
-            if (this.state.focus) {
-                // document.addEventListener('keydown', this.onKeyDown);
-                // document.addEventListener('keypress', this.onKeyPress);
-                // document.addEventListener('keyup', this.onKeyUp);
-
+        key: 'componentFocusDidUpdate',
+        value: function componentFocusDidUpdate(prevFocus) {
+            if (this.state.componentHasFocus) {
                 // Override the context with `null` instead of leaking `this.props` as the context.
                 this.props.onFocus.call(null, this.publishOption(), this.state, this.props);
             } else {
-                // document.removeEventListener('keydown', this.onKeyDown);
-                // document.removeEventListener('keypress', this.onKeyPress);
-                // document.removeEventListener('keyup', this.onKeyUp);
+                // The menu can't be open if the component isn't focused.
+                this.setState({ menuOpen: false });
 
                 // Override the context with `null` instead of leaking `this.props` as the context.
                 this.props.onBlur.call(null, this.publishOption(), this.state, this.props);
             }
         }
-    }, {
-        key: 'openDidUpdate',
-        value: function openDidUpdate(prevOpen) {
-            if (this.state.open) {
-                if (this.state.options.length > 0 && !this.props.multiple) {
-                    var element = this.refs.select;
-                    var viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-                    var elementPos = element.getBoundingClientRect();
-                    var selectHeight = viewportHeight - elementPos.top - 20;
+        // fieldFocusDidUpdate(prevFocus) {
+        //     if (this.state.fieldHasFocus) {
+        //         // document.addEventListener('keydown', this.onKeyDown);
+        //         // document.addEventListener('keypress', this.onKeyPress);
+        //         // document.addEventListener('keyup', this.onKeyUp);
+        //
+        //     } else {
+        //         // document.removeEventListener('keydown', this.onKeyDown);
+        //         // document.removeEventListener('keypress', this.onKeyPress);
+        //         // document.removeEventListener('keyup', this.onKeyUp);
+        //     }
+        // }
 
-                    element.style.maxHeight = selectHeight + 'px';
-                }
+    }, {
+        key: 'menuOpenDidUpdate',
+        value: function menuOpenDidUpdate(prevOpen) {
+            if (this.state.menuOpen) {
+                this.optimizeMenuHeight();
 
                 // Override the context with `null` instead of leaking `this.props` as the context.
                 this.props.onOpen.call(null, this.publishOption(), this.state, this.props);
             } else {
                 // Override the context with `null` instead of leaking `this.props` as the context.
                 this.props.onClose.call(null, this.publishOption(), this.state, this.props);
+            }
+        }
+    }, {
+        key: 'optimizeMenuHeight',
+        value: function optimizeMenuHeight() {
+            if (this.state.options.length > 0 && !this.props.multiple) {
+                var element = this.refs.select;
+                var viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+                var elementPos = element.getBoundingClientRect();
+                var selectHeight = viewportHeight - elementPos.top - 20;
+
+                element.style.maxHeight = selectHeight + 'px';
             }
         }
     }, {
@@ -421,7 +443,7 @@ var Component = function (_React$Component) {
 
             this.placeSelectedFirst(options, option.value);
 
-            this.setState({ value: currentValue, search: search, options: options, highlighted: highlighted, /*focus: this.props.multiple,*/open: false });
+            this.setState({ value: currentValue, search: search, options: options, highlighted: highlighted, /*fieldHasFocus: this.props.multiple,*/menuOpen: false });
 
             if (this.props.search && !this.props.multiple) {
                 this.refs.search.blur();
@@ -460,7 +482,7 @@ var Component = function (_React$Component) {
     }, {
         key: 'scrollToSelected',
         value: function scrollToSelected() {
-            if (this.props.multiple || this.state.highlighted == null || !this.refs.select || !this.state.focus || !this.state.open || this.state.options.length < 1) {
+            if (this.props.multiple || this.state.highlighted == null || !this.refs.select || !this.state.fieldHasFocus || !this.state.menuOpen || this.state.options.length < 1) {
                 return;
             }
 
@@ -550,7 +572,7 @@ var Component = function (_React$Component) {
 
             var className = this.classes.select;
 
-            if (this.state.open) {
+            if (this.state.menuOpen) {
                 className += ' ' + _Bem2.default.m(this.classes.select, 'display');
             }
 
@@ -665,7 +687,7 @@ var Component = function (_React$Component) {
 
             return _react2.default.createElement(
                 'div',
-                { ref: 'container', className: (0, _classnames3.default)(this.classes.container, _Bem2.default.m(this.classes.container, 'select'), (_classnames = {}, _defineProperty(_classnames, _Bem2.default.m(this.classes.container, 'multiple'), this.props.multiple), _defineProperty(_classnames, _Bem2.default.m(this.classes.container, 'focus'), this.state.focus), _defineProperty(_classnames, _Bem2.default.m(this.classes.container, 'open'), this.state.open), _classnames)) },
+                { ref: 'container', className: (0, _classnames3.default)(this.classes.container, _Bem2.default.m(this.classes.container, 'select'), (_classnames = {}, _defineProperty(_classnames, _Bem2.default.m(this.classes.container, 'multiple'), this.props.multiple), _defineProperty(_classnames, _Bem2.default.m(this.classes.container, 'focus'), this.state.fieldHasFocus), _defineProperty(_classnames, _Bem2.default.m(this.classes.container, 'open'), this.state.menuOpen), _classnames)) },
                 this.renderOutElement(),
                 this.renderSearchField(),
                 this.renderOptions()
@@ -680,7 +702,7 @@ var _initialiseProps = function _initialiseProps() {
     var _this5 = this;
 
     this.fieldDidFocus = function () {
-        return _this5.setState({ focus: true, open: true, options: _this5.state.defaultOptions, search: '' });
+        return _this5.setState({ fieldHasFocus: true, menuOpen: true, options: _this5.state.defaultOptions, search: '' });
     };
 
     this.fieldDidBlur = function () {
@@ -695,7 +717,7 @@ var _initialiseProps = function _initialiseProps() {
             search = option.name;
         }
 
-        _this5.setState({ focus: false, open: false, highlighted: null, search: search });
+        _this5.setState({ fieldHasFocus: false, menuOpen: false, highlighted: null, search: search });
     };
 
     this.searchDidChange = function (e) {
@@ -725,12 +747,12 @@ var _initialiseProps = function _initialiseProps() {
     };
 
     this.onKeyDown = function (e) {
-        if (!_this5.state.focus) {
-            return;
-        }
+        // if (!this.state.fieldHasFocus) {
+        //     return;
+        // }
 
-        if (!_this5.state.open) {
-            _this5.setState({ open: true });
+        if (!_this5.state.menuOpen) {
+            _this5.setState({ menuOpen: true });
         }
 
         /** Tab */
@@ -758,7 +780,7 @@ var _initialiseProps = function _initialiseProps() {
 
     this.toggle = function (event) {
         event && event.preventDefault();
-        _this5.setState({ open: !_this5.state.open });
+        _this5.setState({ menuOpen: !_this5.state.menuOpen });
     };
 
     this.menuDidPress = function () {

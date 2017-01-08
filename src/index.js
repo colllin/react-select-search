@@ -75,13 +75,14 @@ class Component extends React.Component {
         this.placeSelectedFirst(options, value);
 
         this.state = {
-            search         : search,
-            value          : value,
-            defaultOptions : props.options,
-            options        : options,
-            highlighted    : null,
-            focus          : false,
-            open           : false
+            search            : search,
+            value             : value,
+            defaultOptions    : props.options,
+            options           : options,
+            highlighted       : null,
+            fieldHasFocus     : false,
+            componentHasFocus : false,
+            menuOpen              : false
         };
 
         this.updateClassnames(props);
@@ -124,15 +125,23 @@ class Component extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
+        if (this.state.componentHasFocus != prevState.componentHasFocus) {
+            this.componentFocusDidUpdate(prevState.componentHasFocus);
+        }
+
+        if (this.state.fieldHasFocus != prevState.fieldHasFocus) {
+            this.fieldFocusDidUpdate(prevState.fieldHasFocus);
+        }
+
+        if (this.state.menuPressed != prevState.menuPressed) {
+            this.menuPressedDidUpdate(prevState.menuPressed);
+        }
+
+        if (this.state.menuOpen != prevState.menuOpen) {
+            this.menuOpenDidUpdate(prevState.menuOpen);
+        }
+
         /* Fire callbacks */
-        if (this.state.focus != prevState.focus) {
-            this.focusDidUpdate(prevState.focus);
-        }
-
-        if (this.state.open != prevState.open) {
-            this.openDidUpdate(prevState.open);
-        }
-
         if (this.state.highlighted !== prevState.highlighted) {
             // Override the context with `null` instead of leaking `this.props` as the context.
             this.props.onHighlight.call(null, this.state.options[this.state.highlighted], this.state, this.props);
@@ -149,7 +158,7 @@ class Component extends React.Component {
     /**
      * DOM event handlers
      * -------------------------------------------------------------------------*/
-    fieldDidFocus = () => this.setState({focus: true, open: true, options: this.state.defaultOptions, search: ''});
+    fieldDidFocus = () => this.setState({fieldHasFocus: true, menuOpen: true, options: this.state.defaultOptions, search: ''});
     fieldDidBlur = () => {
         // if (this.props.search && !this.props.multiple) {
         //     this.refs.search.blur();
@@ -162,7 +171,7 @@ class Component extends React.Component {
             search = option.name;
         }
 
-        this.setState({focus: false, open: false, highlighted: null, search: search});
+        this.setState({fieldHasFocus: false, menuOpen: false, highlighted: null, search: search});
     }
 
     searchDidChange = (e) => {
@@ -192,12 +201,12 @@ class Component extends React.Component {
     }
 
     onKeyDown = (e) => {
-        if (!this.state.focus) {
-            return;
-        }
+        // if (!this.state.fieldHasFocus) {
+        //     return;
+        // }
 
-        if (!this.state.open) {
-            this.setState({open: true});
+        if (!this.state.menuOpen) {
+            this.setState({menuOpen: true});
         }
 
         /** Tab */
@@ -269,7 +278,7 @@ class Component extends React.Component {
     }
 
     escWasPressed() {
-        this.setState({open: false});
+        this.setState({menuOpen: false});
     }
 
     /**
@@ -297,40 +306,51 @@ class Component extends React.Component {
         });
     }
 
-    focusDidUpdate(prevFocus) {
-        if (this.state.focus) {
-            // document.addEventListener('keydown', this.onKeyDown);
-            // document.addEventListener('keypress', this.onKeyPress);
-            // document.addEventListener('keyup', this.onKeyUp);
-
+    componentFocusDidUpdate(prevFocus) {
+        if (this.state.componentHasFocus) {
             // Override the context with `null` instead of leaking `this.props` as the context.
             this.props.onFocus.call(null, this.publishOption(), this.state, this.props);
         } else {
-            // document.removeEventListener('keydown', this.onKeyDown);
-            // document.removeEventListener('keypress', this.onKeyPress);
-            // document.removeEventListener('keyup', this.onKeyUp);
+            // The menu can't be open if the component isn't focused.
+            this.setState({menuOpen: false});
 
             // Override the context with `null` instead of leaking `this.props` as the context.
             this.props.onBlur.call(null, this.publishOption(), this.state, this.props);
         }
     }
+    // fieldFocusDidUpdate(prevFocus) {
+    //     if (this.state.fieldHasFocus) {
+    //         // document.addEventListener('keydown', this.onKeyDown);
+    //         // document.addEventListener('keypress', this.onKeyPress);
+    //         // document.addEventListener('keyup', this.onKeyUp);
+    //
+    //     } else {
+    //         // document.removeEventListener('keydown', this.onKeyDown);
+    //         // document.removeEventListener('keypress', this.onKeyPress);
+    //         // document.removeEventListener('keyup', this.onKeyUp);
+    //     }
+    // }
 
-    openDidUpdate(prevOpen) {
-        if (this.state.open) {
-            if (this.state.options.length > 0 && !this.props.multiple) {
-                let element = this.refs.select;
-                let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-                let elementPos     = element.getBoundingClientRect();
-                let selectHeight   = viewportHeight - elementPos.top - 20;
-
-                element.style.maxHeight = selectHeight + 'px';
-            }
+    menuOpenDidUpdate(prevOpen) {
+        if (this.state.menuOpen) {
+            this.optimizeMenuHeight();
 
             // Override the context with `null` instead of leaking `this.props` as the context.
             this.props.onOpen.call(null, this.publishOption(), this.state, this.props);
         } else {
             // Override the context with `null` instead of leaking `this.props` as the context.
             this.props.onClose.call(null, this.publishOption(), this.state, this.props);
+        }
+    }
+
+    optimizeMenuHeight() {
+        if (this.state.options.length > 0 && !this.props.multiple) {
+            let element = this.refs.select;
+            let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+            let elementPos     = element.getBoundingClientRect();
+            let selectHeight   = viewportHeight - elementPos.top - 20;
+
+            element.style.maxHeight = selectHeight + 'px';
         }
     }
 
@@ -373,7 +393,7 @@ class Component extends React.Component {
 
     toggle = (event) => {
         event && event.preventDefault();
-        this.setState({open: !this.state.open});
+        this.setState({menuOpen: !this.state.menuOpen});
     }
 
     placeSelectedFirst(options, value) {
@@ -444,7 +464,7 @@ class Component extends React.Component {
 
         this.placeSelectedFirst(options, option.value);
 
-        this.setState({value: currentValue, search: search, options: options, highlighted: highlighted, /*focus: this.props.multiple,*/ open: false});
+        this.setState({value: currentValue, search: search, options: options, highlighted: highlighted, /*fieldHasFocus: this.props.multiple,*/ menuOpen: false});
 
         if (this.props.search && !this.props.multiple) {
             this.refs.search.blur();
@@ -480,7 +500,7 @@ class Component extends React.Component {
     }
 
     scrollToSelected() {
-        if (this.props.multiple || this.state.highlighted == null || !this.refs.select || !this.state.focus || !this.state.open || this.state.options.length < 1) {
+        if (this.props.multiple || this.state.highlighted == null || !this.refs.select || !this.state.fieldHasFocus || !this.state.menuOpen || this.state.options.length < 1) {
             return;
         }
 
@@ -549,7 +569,7 @@ class Component extends React.Component {
 
         let className = this.classes.select;
 
-        if (this.state.open) {
+        if (this.state.menuOpen) {
             className += ' ' + Bem.m(this.classes.select, 'display');
         }
 
@@ -644,8 +664,8 @@ class Component extends React.Component {
         return (
             <div ref="container" className={classnames(this.classes.container, Bem.m(this.classes.container, 'select'), {
                 [Bem.m(this.classes.container, 'multiple')]: this.props.multiple,
-                [Bem.m(this.classes.container, 'focus')]: this.state.focus,
-                [Bem.m(this.classes.container, 'open')]: this.state.open,
+                [Bem.m(this.classes.container, 'focus')]: this.state.fieldHasFocus,
+                [Bem.m(this.classes.container, 'open')]: this.state.menuOpen,
             })}>
                 {this.renderOutElement()}
                 {this.renderSearchField()}
