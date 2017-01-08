@@ -497,7 +497,9 @@ var Component = function (_React$Component) {
                         if (_this3.state.value.indexOf(element.value) < 0) {
                             options.push(_react2.default.createElement(
                                 'li',
-                                { className: className, onClick: function onClick() {
+                                { className: className, onMouseDown: function onMouseDown(event) {
+                                        return event.preventDefault();
+                                    }, onClick: function onClick() {
                                         console.log('!', element.value);
                                         _this3.chooseOption(element.value);
                                     }, key: element.value + '-option', 'data-value': element.value },
@@ -506,7 +508,9 @@ var Component = function (_React$Component) {
                         } else {
                             options.push(_react2.default.createElement(
                                 'li',
-                                { className: className, onClick: function onClick() {
+                                { className: className, onMouseDown: function onMouseDown(event) {
+                                        return event.preventDefault();
+                                    }, onClick: function onClick() {
                                         console.log('!', element.value);
                                         _this3.removeOption(element.value);
                                     }, key: element.value + '-option', 'data-value': element.value },
@@ -523,7 +527,9 @@ var Component = function (_React$Component) {
                         } else {
                             options.push(_react2.default.createElement(
                                 'li',
-                                { className: className, onClick: function onClick() {
+                                { className: className, onMouseDown: function onMouseDown(event) {
+                                        return event.preventDefault();
+                                    }, onClick: function onClick() {
                                         console.log('!', element.value);
                                         _this3.chooseOption(element.value);
                                     }, key: element.value + '-option', 'data-value': element.value },
@@ -639,7 +645,7 @@ var Component = function (_React$Component) {
 
                 searchField = _react2.default.createElement(
                     'a',
-                    { href: 'javascript://', onFocus: this.fieldDidFocus /*onClick={this.toggle}*/, onBlur: this.fieldDidBlur, className: labelClassName },
+                    { href: 'javascript://', onFocus: this.fieldDidFocus, onClick: this.toggle, onBlur: this.fieldDidBlur, className: labelClassName },
                     labelValue
                 );
             }
@@ -746,11 +752,7 @@ var _initialiseProps = function _initialiseProps() {
 
     this.toggle = function (event) {
         event && event.preventDefault();
-        // if (this.state.open) {
-        //     this.setState({open: false});
-        // } else if (!this.state.focus) {
-        //     this.fieldDidFocus();
-        // }
+        _this5.setState({ open: !_this5.state.open });
     };
 };
 
