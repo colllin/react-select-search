@@ -374,11 +374,7 @@ class Component extends React.Component {
 
     toggle = (event) => {
         event && event.preventDefault();
-        // if (this.state.open) {
-        //     this.setState({open: false});
-        // } else if (!this.state.focus) {
-        //     this.fieldDidFocus();
-        // }
+        this.setState({open: !this.state.open});
     }
 
     placeSelectedFirst(options, value) {
@@ -511,12 +507,12 @@ class Component extends React.Component {
 
                 if (this.props.multiple) {
                     if (this.state.value.indexOf(element.value) < 0) {
-                        options.push(<li className={className} onClick={() => {
+                        options.push(<li className={className} onMouseDown={(event) => event.preventDefault()} onClick={() => {
                             console.log('!', element.value);
                             this.chooseOption(element.value);
                         }} key={element.value + '-option'} data-value={element.value}>{this.props.renderOption(element, this.state, this.props)}</li>);
                     } else {
-                        options.push(<li className={className} onClick={() => {
+                        options.push(<li className={className} onMouseDown={(event) => event.preventDefault()} onClick={() => {
                             console.log('!', element.value);
                             this.removeOption(element.value);
                         }} key={element.value + '-option'} data-value={element.value}>{this.props.renderOption(element, this.state, this.props)}</li>);
@@ -525,7 +521,7 @@ class Component extends React.Component {
                     if (element.value === this.state.value) {
                         options.push(<li className={className} key={element.value + '-option'} data-value={element.value}>{this.props.renderOption(element)}</li>);
                     } else {
-                        options.push(<li className={className} onClick={() => {
+                        options.push(<li className={className} onMouseDown={(event) => event.preventDefault()} onClick={() => {
                             console.log('!', element.value);
                             this.chooseOption(element.value);
                         }} key={element.value + '-option'} data-value={element.value}>{this.props.renderOption(element, this.state, this.props)}</li>);
@@ -623,7 +619,7 @@ class Component extends React.Component {
                 labelClassName = this.classes.search;
             }
 
-            searchField = <a href="javascript://" onFocus={this.fieldDidFocus} /*onClick={this.toggle}*/ onBlur={this.fieldDidBlur} className={labelClassName}>{labelValue}</a>;
+            searchField = <a href="javascript://" onFocus={this.fieldDidFocus} onClick={this.toggle} onBlur={this.fieldDidBlur} className={labelClassName}>{labelValue}</a>;
         }
 
         return searchField;
