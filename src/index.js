@@ -116,6 +116,9 @@ class Component extends React.Component {
         // document.removeEventListener('keydown', this.onKeyDown);
         // document.removeEventListener('keypress', this.onKeyPress);
         // document.removeEventListener('keyup', this.onKeyUp);
+        document.removeEventListener('mouseup', this.menuDidUnpress);
+        document.removeEventListener('touchend', this.menuDidUnpress);
+        document.removeEventListener('blur', this.menuDidUnpress);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -327,6 +330,8 @@ class Component extends React.Component {
         this.updateComponentHasFocus();
 
         if (this.state.fieldHasFocus) {
+            this.refs.field.select();
+
             // document.addEventListener('keydown', this.onKeyDown);
             // document.addEventListener('keypress', this.onKeyPress);
             // document.addEventListener('keyup', this.onKeyUp);
@@ -353,9 +358,11 @@ class Component extends React.Component {
         this.updateComponentHasFocus();
 
         if (this.state.menuPressed) {
-
+            //
         } else {
-
+            // if (this.props.search && !this.props.multiple) {
+                // this.refs.field.select();
+            // }
         }
     }
 
@@ -439,10 +446,18 @@ class Component extends React.Component {
         return options;
     }
 
-    menuDidPress = () => this.setState({menuPressed: true});
+    menuDidPress = () => {
+        this.setState({menuPressed: true});
+        document.addEventListener('mouseup', this.menuDidUnpress);
+        document.addEventListener('touchend', this.menuDidUnpress);
+        document.addEventListener('blur', this.menuDidUnpress);
+    }
     menuDidUnpress = () => {
         this.refs.field && this.refs.field.focus();
         this.setState({menuPressed: false});
+        document.removeEventListener('mouseup', this.menuDidUnpress);
+        document.removeEventListener('touchend', this.menuDidUnpress);
+        document.removeEventListener('blur', this.menuDidUnpress);
     }
 
     chooseOption(value) {
@@ -482,9 +497,9 @@ class Component extends React.Component {
 
         this.setState({value: currentValue, search: search, options: options, highlighted: highlighted, menuOpen: false});
 
-        if (this.props.search && !this.props.multiple) {
-            this.refs.field.select();
-        }
+        // if (this.props.search && !this.props.multiple) {
+        //     this.refs.field.select();
+        // }
     }
 
     removeOption(value) {
@@ -572,7 +587,7 @@ class Component extends React.Component {
 
             if (options.length > 0) {
                 select = (
-                    <ul ref="selectOptions" className={this.classes.options} onMouseDown={this.menuDidPress} onTouchStart={this.menuDidPress} onMouseUp={this.menuDidUnpress} onTouchEnd={this.menuDidUnpress}>
+                    <ul ref="selectOptions" className={this.classes.options} onMouseDown={this.menuDidPress} onTouchStart={this.menuDidPress}>
                         {options}
                     </ul>
                 );
@@ -652,7 +667,7 @@ class Component extends React.Component {
             onBlur  : this.fieldDidBlur
         };
 
-        if (this.props.search) {
+        if (this.props.search && this.state.menuOpen) {
             let name = null;
 
             searchField = <input {...focusEvents} {...keyboardEvents} name={name} ref="field" className={this.classes.search} type="search" value={this.state.search} onChange={this.searchDidChange} placeholder={this.props.placeholder} />;

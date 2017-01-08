@@ -155,6 +155,9 @@ var Component = function (_React$Component) {
             // document.removeEventListener('keydown', this.onKeyDown);
             // document.removeEventListener('keypress', this.onKeyPress);
             // document.removeEventListener('keyup', this.onKeyUp);
+            document.removeEventListener('mouseup', this.menuDidUnpress);
+            document.removeEventListener('touchend', this.menuDidUnpress);
+            document.removeEventListener('blur', this.menuDidUnpress);
         }
     }, {
         key: 'componentWillReceiveProps',
@@ -325,6 +328,8 @@ var Component = function (_React$Component) {
             this.updateComponentHasFocus();
 
             if (this.state.fieldHasFocus) {
+                this.refs.field.select();
+
                 // document.addEventListener('keydown', this.onKeyDown);
                 // document.addEventListener('keypress', this.onKeyPress);
                 // document.addEventListener('keyup', this.onKeyUp);
@@ -352,7 +357,13 @@ var Component = function (_React$Component) {
         value: function menuPressedDidUpdate(prevPressed) {
             this.updateComponentHasFocus();
 
-            if (this.state.menuPressed) {} else {}
+            if (this.state.menuPressed) {
+                //
+            } else {
+                    // if (this.props.search && !this.props.multiple) {
+                    // this.refs.field.select();
+                    // }
+                }
         }
     }, {
         key: 'optimizeMenuHeight',
@@ -472,9 +483,9 @@ var Component = function (_React$Component) {
 
             this.setState({ value: currentValue, search: search, options: options, highlighted: highlighted, menuOpen: false });
 
-            if (this.props.search && !this.props.multiple) {
-                this.refs.field.select();
-            }
+            // if (this.props.search && !this.props.multiple) {
+            //     this.refs.field.select();
+            // }
         }
     }, {
         key: 'removeOption',
@@ -587,7 +598,7 @@ var Component = function (_React$Component) {
                 if (options.length > 0) {
                     select = _react2.default.createElement(
                         'ul',
-                        { ref: 'selectOptions', className: this.classes.options, onMouseDown: this.menuDidPress, onTouchStart: this.menuDidPress, onMouseUp: this.menuDidUnpress, onTouchEnd: this.menuDidUnpress },
+                        { ref: 'selectOptions', className: this.classes.options, onMouseDown: this.menuDidPress, onTouchStart: this.menuDidPress },
                         options
                     );
                 }
@@ -680,7 +691,7 @@ var Component = function (_React$Component) {
                 onBlur: this.fieldDidBlur
             };
 
-            if (this.props.search) {
+            if (this.props.search && this.state.menuOpen) {
                 var name = null;
 
                 searchField = _react2.default.createElement('input', _extends({}, focusEvents, keyboardEvents, { name: name, ref: 'field', className: this.classes.search, type: 'search', value: this.state.search, onChange: this.searchDidChange, placeholder: this.props.placeholder }));
@@ -800,12 +811,18 @@ var _initialiseProps = function _initialiseProps() {
     };
 
     this.menuDidPress = function () {
-        return _this5.setState({ menuPressed: true });
+        _this5.setState({ menuPressed: true });
+        document.addEventListener('mouseup', _this5.menuDidUnpress);
+        document.addEventListener('touchend', _this5.menuDidUnpress);
+        document.addEventListener('blur', _this5.menuDidUnpress);
     };
 
     this.menuDidUnpress = function () {
         _this5.refs.field && _this5.refs.field.focus();
         _this5.setState({ menuPressed: false });
+        document.removeEventListener('mouseup', _this5.menuDidUnpress);
+        document.removeEventListener('touchend', _this5.menuDidUnpress);
+        document.removeEventListener('blur', _this5.menuDidUnpress);
     };
 };
 
