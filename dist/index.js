@@ -691,7 +691,7 @@ var Component = function (_React$Component) {
                 onBlur: this.fieldDidBlur
             };
 
-            if (this.props.search && this.state.menuOpen) {
+            if (this.props.search) {
                 var name = null;
 
                 searchField = _react2.default.createElement('input', _extends({}, focusEvents, keyboardEvents, { name: name, ref: 'field', className: this.classes.search, type: 'search', value: this.state.search, onChange: this.searchDidChange, placeholder: this.props.placeholder }));

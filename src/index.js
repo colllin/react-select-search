@@ -667,7 +667,7 @@ class Component extends React.Component {
             onBlur  : this.fieldDidBlur
         };
 
-        if (this.props.search && this.state.menuOpen) {
+        if (this.props.search) {
             let name = null;
 
             searchField = <input {...focusEvents} {...keyboardEvents} name={name} ref="field" className={this.classes.search} type="search" value={this.state.search} onChange={this.searchDidChange} placeholder={this.props.placeholder} />;
