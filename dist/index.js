@@ -299,7 +299,8 @@ var Component = function (_React$Component) {
         key: 'componentFocusDidUpdate',
         value: function componentFocusDidUpdate(prevFocus) {
             if (this.state.componentHasFocus) {
-                this.setState({ options: this.state.defaultOptions, search: '' });
+                // The menu always opens on initial component focus.
+                this.setState({ menuOpen: true, options: this.state.defaultOptions, search: '' });
 
                 // Override the context with `null` instead of leaking `this.props` as the context.
                 this.props.onFocus.call(null, this.publishOption(), this.state, this.props);
