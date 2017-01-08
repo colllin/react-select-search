@@ -4,6 +4,8 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _react = require('react');
@@ -149,9 +151,9 @@ var Component = function (_React$Component) {
     }, {
         key: 'componentWillUnmount',
         value: function componentWillUnmount() {
-            document.removeEventListener('keydown', this.onKeyDown);
-            document.removeEventListener('keypress', this.onKeyPress);
-            document.removeEventListener('keyup', this.onKeyUp);
+            // document.removeEventListener('keydown', this.onKeyDown);
+            // document.removeEventListener('keypress', this.onKeyPress);
+            // document.removeEventListener('keyup', this.onKeyUp);
         }
     }, {
         key: 'componentWillReceiveProps',
@@ -280,16 +282,16 @@ var Component = function (_React$Component) {
         key: 'focusDidUpdate',
         value: function focusDidUpdate(prevFocus) {
             if (this.state.focus) {
-                document.addEventListener('keydown', this.onKeyDown);
-                document.addEventListener('keypress', this.onKeyPress);
-                document.addEventListener('keyup', this.onKeyUp);
+                // document.addEventListener('keydown', this.onKeyDown);
+                // document.addEventListener('keypress', this.onKeyPress);
+                // document.addEventListener('keyup', this.onKeyUp);
 
                 // Override the context with `null` instead of leaking `this.props` as the context.
                 this.props.onFocus.call(null, this.publishOption(), this.state, this.props);
             } else {
-                document.removeEventListener('keydown', this.onKeyDown);
-                document.removeEventListener('keypress', this.onKeyPress);
-                document.removeEventListener('keyup', this.onKeyUp);
+                // document.removeEventListener('keydown', this.onKeyDown);
+                // document.removeEventListener('keypress', this.onKeyPress);
+                // document.removeEventListener('keyup', this.onKeyUp);
 
                 // Override the context with `null` instead of leaking `this.props` as the context.
                 this.props.onBlur.call(null, this.publishOption(), this.state, this.props);
@@ -619,10 +621,20 @@ var Component = function (_React$Component) {
         value: function renderSearchField() {
             var searchField = null;
 
+            var keyboardEvents = {
+                onKeyDown: this.onKeyDown,
+                onKeyPress: this.onKeyPress,
+                onKeyUp: this.onKeyUp
+            };
+            var focusEvents = {
+                onFocus: this.fieldDidFocus,
+                onBlur: this.fieldDidBlur
+            };
+
             if (this.props.search) {
                 var name = null;
 
-                searchField = _react2.default.createElement('input', { name: name, ref: 'search', onFocus: this.fieldDidFocus, onBlur: this.fieldDidBlur, onKeyPress: this.onKeyPress, className: this.classes.search, type: 'search', value: this.state.search, onChange: this.searchDidChange, placeholder: this.props.placeholder });
+                searchField = _react2.default.createElement('input', _extends({}, focusEvents, keyboardEvents, { name: name, ref: 'search', className: this.classes.search, type: 'search', value: this.state.search, onChange: this.searchDidChange, placeholder: this.props.placeholder }));
             } else {
                 var option = void 0;
                 var labelValue = void 0;
@@ -639,7 +651,7 @@ var Component = function (_React$Component) {
 
                 searchField = _react2.default.createElement(
                     'a',
-                    { href: 'javascript://', onFocus: this.fieldDidFocus, onClick: this.toggle, onBlur: this.fieldDidBlur, className: labelClassName },
+                    _extends({ href: 'javascript://' }, focusEvents, keyboardEvents, { onClick: this.toggle, className: labelClassName }),
                     labelValue
                 );
             }
@@ -667,6 +679,10 @@ var Component = function (_React$Component) {
 var _initialiseProps = function _initialiseProps() {
     var _this5 = this;
 
+    this.fieldDidFocus = function () {
+        return _this5.setState({ focus: true, open: true, options: _this5.state.defaultOptions, search: '' });
+    };
+
     this.fieldDidBlur = function () {
         // if (this.props.search && !this.props.multiple) {
         //     this.refs.search.blur();
@@ -680,10 +696,6 @@ var _initialiseProps = function _initialiseProps() {
         }
 
         _this5.setState({ focus: false, open: false, highlighted: null, search: search });
-    };
-
-    this.fieldDidFocus = function () {
-        return _this5.setState({ focus: true, open: true, options: _this5.state.defaultOptions, search: '' });
     };
 
     this.searchDidChange = function (e) {

@@ -112,9 +112,9 @@ class Component extends React.Component {
     }
 
     componentWillUnmount() {
-        document.removeEventListener('keydown', this.onKeyDown);
-        document.removeEventListener('keypress', this.onKeyPress);
-        document.removeEventListener('keyup', this.onKeyUp);
+        // document.removeEventListener('keydown', this.onKeyDown);
+        // document.removeEventListener('keypress', this.onKeyPress);
+        // document.removeEventListener('keyup', this.onKeyUp);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -149,6 +149,7 @@ class Component extends React.Component {
     /**
      * DOM event handlers
      * -------------------------------------------------------------------------*/
+    fieldDidFocus = () => this.setState({focus: true, open: true, options: this.state.defaultOptions, search: ''});
     fieldDidBlur = () => {
         // if (this.props.search && !this.props.multiple) {
         //     this.refs.search.blur();
@@ -163,8 +164,6 @@ class Component extends React.Component {
 
         this.setState({focus: false, open: false, highlighted: null, search: search});
     }
-
-    fieldDidFocus = () => this.setState({focus: true, open: true, options: this.state.defaultOptions, search: ''});
 
     searchDidChange = (e) => {
         let value = e.target.value;
@@ -300,16 +299,16 @@ class Component extends React.Component {
 
     focusDidUpdate(prevFocus) {
         if (this.state.focus) {
-            document.addEventListener('keydown', this.onKeyDown);
-            document.addEventListener('keypress', this.onKeyPress);
-            document.addEventListener('keyup', this.onKeyUp);
+            // document.addEventListener('keydown', this.onKeyDown);
+            // document.addEventListener('keypress', this.onKeyPress);
+            // document.addEventListener('keyup', this.onKeyUp);
 
             // Override the context with `null` instead of leaking `this.props` as the context.
             this.props.onFocus.call(null, this.publishOption(), this.state, this.props);
         } else {
-            document.removeEventListener('keydown', this.onKeyDown);
-            document.removeEventListener('keypress', this.onKeyPress);
-            document.removeEventListener('keyup', this.onKeyUp);
+            // document.removeEventListener('keydown', this.onKeyDown);
+            // document.removeEventListener('keypress', this.onKeyPress);
+            // document.removeEventListener('keyup', this.onKeyUp);
 
             // Override the context with `null` instead of leaking `this.props` as the context.
             this.props.onBlur.call(null, this.publishOption(), this.state, this.props);
@@ -607,10 +606,20 @@ class Component extends React.Component {
     renderSearchField() {
         let searchField = null;
 
+        const keyboardEvents = {
+            onKeyDown  : this.onKeyDown,
+            onKeyPress : this.onKeyPress,
+            onKeyUp    : this.onKeyUp
+        };
+        const focusEvents = {
+            onFocus : this.fieldDidFocus,
+            onBlur  : this.fieldDidBlur
+        };
+
         if (this.props.search) {
             let name = null;
 
-            searchField = <input name={name} ref="search" onFocus={this.fieldDidFocus} onBlur={this.fieldDidBlur} onKeyPress={this.onKeyPress} className={this.classes.search} type="search" value={this.state.search} onChange={this.searchDidChange} placeholder={this.props.placeholder} />;
+            searchField = <input {...focusEvents} {...keyboardEvents} name={name} ref="search" className={this.classes.search} type="search" value={this.state.search} onChange={this.searchDidChange} placeholder={this.props.placeholder} />;
         } else {
             let option;
             let labelValue;
@@ -625,7 +634,7 @@ class Component extends React.Component {
                 labelClassName = this.classes.search;
             }
 
-            searchField = <a href="javascript://" onFocus={this.fieldDidFocus} onClick={this.toggle} onBlur={this.fieldDidBlur} className={labelClassName}>{labelValue}</a>;
+            searchField = <a href="javascript://" {...focusEvents} {...keyboardEvents} onClick={this.toggle} className={labelClassName}>{labelValue}</a>;
         }
 
         return searchField;
