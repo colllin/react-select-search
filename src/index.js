@@ -404,6 +404,12 @@ class Component extends React.Component {
         return options;
     }
 
+    menuDidPress = () => this.setState({menuPressed: true});
+    menuDidUnpress = () => {
+        this.refs.search.focus()
+        this.setState({menuPressed: false});
+    }
+
     chooseOption(value) {
         let currentValue = this.state.value;
         let option;
@@ -507,12 +513,12 @@ class Component extends React.Component {
 
                 if (this.props.multiple) {
                     if (this.state.value.indexOf(element.value) < 0) {
-                        options.push(<li className={className} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+                        options.push(<li className={className} onClick={() => {
                             console.log('!', element.value);
                             this.chooseOption(element.value);
                         }} key={element.value + '-option'} data-value={element.value}>{this.props.renderOption(element, this.state, this.props)}</li>);
                     } else {
-                        options.push(<li className={className} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+                        options.push(<li className={className} onClick={() => {
                             console.log('!', element.value);
                             this.removeOption(element.value);
                         }} key={element.value + '-option'} data-value={element.value}>{this.props.renderOption(element, this.state, this.props)}</li>);
@@ -521,7 +527,7 @@ class Component extends React.Component {
                     if (element.value === this.state.value) {
                         options.push(<li className={className} key={element.value + '-option'} data-value={element.value}>{this.props.renderOption(element)}</li>);
                     } else {
-                        options.push(<li className={className} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+                        options.push(<li className={className} onClick={() => {
                             console.log('!', element.value);
                             this.chooseOption(element.value);
                         }} key={element.value + '-option'} data-value={element.value}>{this.props.renderOption(element, this.state, this.props)}</li>);
@@ -531,7 +537,7 @@ class Component extends React.Component {
 
             if (options.length > 0) {
                 select = (
-                    <ul ref="selectOptions" className={this.classes.options}>
+                    <ul ref="selectOptions" className={this.classes.options} onMouseDown={this.menuDidPress} onTouchStart={this.menuDidPress} onMouseUp={this.menuDidUnpress} onTouchEnd={this.menuDidUnpress}>
                         {options}
                     </ul>
                 );

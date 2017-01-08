@@ -497,9 +497,7 @@ var Component = function (_React$Component) {
                         if (_this3.state.value.indexOf(element.value) < 0) {
                             options.push(_react2.default.createElement(
                                 'li',
-                                { className: className, onMouseDown: function onMouseDown(event) {
-                                        return event.preventDefault();
-                                    }, onClick: function onClick() {
+                                { className: className, onClick: function onClick() {
                                         console.log('!', element.value);
                                         _this3.chooseOption(element.value);
                                     }, key: element.value + '-option', 'data-value': element.value },
@@ -508,9 +506,7 @@ var Component = function (_React$Component) {
                         } else {
                             options.push(_react2.default.createElement(
                                 'li',
-                                { className: className, onMouseDown: function onMouseDown(event) {
-                                        return event.preventDefault();
-                                    }, onClick: function onClick() {
+                                { className: className, onClick: function onClick() {
                                         console.log('!', element.value);
                                         _this3.removeOption(element.value);
                                     }, key: element.value + '-option', 'data-value': element.value },
@@ -527,9 +523,7 @@ var Component = function (_React$Component) {
                         } else {
                             options.push(_react2.default.createElement(
                                 'li',
-                                { className: className, onMouseDown: function onMouseDown(event) {
-                                        return event.preventDefault();
-                                    }, onClick: function onClick() {
+                                { className: className, onClick: function onClick() {
                                         console.log('!', element.value);
                                         _this3.chooseOption(element.value);
                                     }, key: element.value + '-option', 'data-value': element.value },
@@ -542,7 +536,7 @@ var Component = function (_React$Component) {
                 if (options.length > 0) {
                     select = _react2.default.createElement(
                         'ul',
-                        { ref: 'selectOptions', className: this.classes.options },
+                        { ref: 'selectOptions', className: this.classes.options, onMouseDown: this.menuDidPress, onTouchStart: this.menuDidPress, onMouseUp: this.menuDidUnpress, onTouchEnd: this.menuDidUnpress },
                         options
                     );
                 }
@@ -753,6 +747,15 @@ var _initialiseProps = function _initialiseProps() {
     this.toggle = function (event) {
         event && event.preventDefault();
         _this5.setState({ open: !_this5.state.open });
+    };
+
+    this.menuDidPress = function () {
+        return _this5.setState({ menuPressed: true });
+    };
+
+    this.menuDidUnpress = function () {
+        _this5.refs.search.focus();
+        _this5.setState({ menuPressed: false });
     };
 };
 
